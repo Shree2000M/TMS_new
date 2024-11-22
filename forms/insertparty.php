@@ -1,38 +1,31 @@
 <?php
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "transportdb";
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $name = $_POST['name'];
+    $contact = $_POST['contact'];
+    $address = $_POST['address'];
+    $gst = $_POST['gst'];
+    $email = $_POST['email'];
+    $uh = $_POST['uh'];
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Database connection
+    $conn = new mysqli('localhost', 'root', '', 'transportdb');
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
-    $name = mysqli_real_escape_string($conn, $_POST['name']);
-    $contact = mysqli_real_escape_string($conn, $_POST['contact']);
-    $address = mysqli_real_escape_string($conn, $_POST['address']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
-
-    // Insert data into database
-    $sql = "INSERT INTO parties (name, contact, address, email, phone) 
-            VALUES ('$name', '$contact', '$address', '$email', '$phone')";
-
-    if ($conn->query($sql) !== TRUE) {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
     }
+
+    // Insert party details into the database
+    $stmt = $conn->prepare("INSERT INTO parties (name, contact, address, gst, email, uh) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $name, $contact, $address, $gst, $email, $uh);
+
+    if ($stmt->execute()) {
+        // Redirect back to the addparty page with success
+        header("Location: addparty.php?success=1");
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
+    $conn->close();
 }
-
-// Fetch all parties
-$parties = $conn->query("SELECT * FROM parties ORDER BY created_at DESC");
-
-// Close connection
-$conn->close();
 ?>
