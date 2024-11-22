@@ -209,7 +209,7 @@ try {
                 <div class="collapse" id="forms">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="../forms/forms.html">
+                      <a href="../forms/forms.php">
                         <span class="sub-item">New Booking</span>
                       </a>
                     </li>
@@ -588,7 +588,7 @@ try {
                     </div>
                     <span class="profile-username">
                       <span class="op-7">Hi,</span>
-                      <span class="fw-bold">Hizrian</span>
+                      <span class="fw-bold">Shritej</span>
                     </span>
                   </a>
                   <ul class="dropdown-menu dropdown-user animated fadeIn">

@@ -228,8 +228,18 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
                 <div class="collapse show" id="forms">
                   <ul class="nav nav-collapse">
                     <li class="active">
-                      <a href="../forms/forms.html">
+                      <a href="../forms/forms.php">
                         <span class="sub-item">New Booking</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="addparty.php">
+                        <span class="sub-item">Add party</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="addvehicle.php">
+                        <span class="sub-item">Add Vehicle</span>
                       </a>
                     </li>
                   </ul>
@@ -601,7 +611,7 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
                     </div>
                     <span class="profile-username">
                       <span class="op-7">Hi,</span>
-                      <span class="fw-bold">Hizrian</span>
+                      <span class="fw-bold">Shritej</span>
                     </span>
                   </a>
                   <ul class="dropdown-menu dropdown-user animated fadeIn">

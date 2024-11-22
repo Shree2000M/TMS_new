@@ -237,16 +237,16 @@ if (isset($_GET['edit_id'])) {
                   </ul>
                 </div>
               </li>
-              <li class="nav-item">
+              <li class="nav-item  active submenu">
                 <a data-bs-toggle="collapse" href="#forms">
                   <i class="fas fa-pen-square"></i>
                   <p>Forms</p>
                   <span class="caret"></span>
                 </a>
-                <div class="collapse" id="forms">
+                <div class="collapse show" id="forms">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="../forms/forms.html">
+                      <a href="../forms/forms.php">
                         <span class="sub-item">New Booking</span>
                       </a>
                     </li>
@@ -255,24 +255,29 @@ if (isset($_GET['edit_id'])) {
                         <span class="sub-item">Add Party</span>
                       </a>
                     </li>
+                    <li>
+                      <a href="../forms/addvehicle.php">
+                        <span class="sub-item">Add Vehicle</span>
+                      </a>
+                    </li>
                     
                   </ul>
                 </div>
               </li>
-              <li class="nav-item active submenu">
+              <li class="nav-item">
                 <a data-bs-toggle="collapse" href="#tables">
                   <i class="fas fa-table"></i>
                   DATA
                   <span class="caret"></span>
                 </a>
-                <div class="collapse show" id="tables">
+                <div class="collapse" id="tables">
                   <ul class="nav nav-collapse">
                     <li>
                       <a href="../tables/tables.html">
                         <span class="sub-item">Basic Table</span>
                       </a>
                     </li>
-                    <li class="active">
+                    <li>
                       <a href="../tables/datatables.php">
                         <span class="sub-item">Booking List</span>
                       </a>
@@ -626,7 +631,7 @@ if (isset($_GET['edit_id'])) {
                     </div>
                     <span class="profile-username">
                       <span class="op-7">Hi,</span>
-                      <span class="fw-bold">Hizrian</span>
+                      <span class="fw-bold">Shritej</span>
                     </span>
                   </a>
                   <ul class="dropdown-menu dropdown-user animated fadeIn">
