@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 22, 2024 at 05:54 AM
+-- Generation Time: Nov 22, 2024 at 04:03 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -68,7 +68,11 @@ INSERT INTO `charges` (`id`, `order_id`, `charge_name`, `amount`) VALUES
 (27, 15, 'GSTa', 0.00),
 (28, 15, 'TOLLa', 0.00),
 (29, 16, 'GST', 100.00),
-(30, 16, 'TOLL', 5580.00);
+(30, 16, 'TOLL', 5580.00),
+(31, 17, 'c', 1.00),
+(32, 18, 'a1', 1.00),
+(33, 19, 'c', 1.00),
+(34, 19, 's', 12.00);
 
 -- --------------------------------------------------------
 
@@ -120,7 +124,13 @@ INSERT INTO `items` (`id`, `order_id`, `item_name`, `quantity`, `weight`, `rate`
 (27, 15, 'pant a', 1254, 2000.00, 1450.00, 0.00),
 (28, 15, 'shirtsa', 2547, 500.00, 1350.00, 0.00),
 (29, 16, 'pant', 1254, 2000.00, 1450.00, 1818300.00),
-(30, 16, 'shirts', 2547, 500.00, 1350.00, 3438450.00);
+(30, 16, 'shirts', 2547, 500.00, 1350.00, 3438450.00),
+(31, 17, 'a111', 1, 1.00, 1.00, 1.00),
+(32, 17, 'c', 1, 1.00, 1.00, 1.00),
+(33, 18, 'a1', 1, 1.00, 1.00, 1.00),
+(34, 18, 'b1', 5, 5.00, 5.00, 25.00),
+(35, 19, '123', 1, 1.00, 1.00, 1.00),
+(36, 19, 'a1', 1, 12.00, 12.00, 12.00);
 
 -- --------------------------------------------------------
 
@@ -167,7 +177,10 @@ INSERT INTO `orders` (`id`, `Status`, `order_name`, `customer_name`, `order_date
 (13, 'Initiated', 'a', 'a', '2024-11-07', 'a', 'a', 'Air', 'Consignee', 'Consignor', 'pune', 'a', 'Road', ' a', ' a', 'a'),
 (14, 'Initiated', 'a', 'a', '2024-10-30', 'a', 'a', 'Road', 'Consignor', 'Consignor', 'a', 'a', 'Air', ' a', ' a', 'a'),
 (15, 'Paid', 'shree sai krupa enter prizes a', 'shree govinda infra pvt ltd', '2024-11-08', 'kon gaon', 'panvel', 'Road', 'Consignor', 'Consignee', 'plot no 152, near police station kon gaon panvel raigad 410206', 'radha chauk thana naka , near taluk office panvel raigad 410206', 'Road', ' 125880', ' MH46 BC 410206', 'santosh kumar sharma'),
-(16, 'Bill Pending', 'shree sai krupa enter prizes', 'shree govinda infra pvt ltd', '2024-11-21', 'kon gaon', 'panvel', 'Road', 'Consignor', 'Consignee', 'plot no 152, near police station kon gaon panvel raigad 410206', 'radha chauk thana naka , near taluk office panvel raigad 410206', 'Road', ' 125880', ' MH46 BC 410206', 'santosh kumar sharma');
+(16, 'Paid', 'shree sai krupa enter prizes', 'shree govinda infra pvt ltd', '2024-11-21', 'kon gaon', 'panvel', 'Road', 'Consignor', 'Consignee', 'plot no 152, near police station kon gaon panvel raigad 410206', 'radha chauk thana naka , near taluk office panvel raigad 410206', 'Road', ' 125880', ' MH46 BC 410206', 'santosh kumar sharma'),
+(17, 'Initiated', '2', 'a', '2024-11-15', '1', '1', 'Air', 'Consignor', 'Consignor', 'a', '1', 'Road', ' 254', ' 4', '111'),
+(18, 'Initiated', '3', '2', '2024-11-10', 'PANVEL', 'mumbai', 'Air', 'Consignee', 'Consignor', 'amravati', 'alibag', 'Road', ' 100', ' MH46500', '124'),
+(19, 'Bill Pending', '2', '2', '2024-11-16', 'PANVEL', 'MUMBAI', 'Air', 'Consignee', 'Consignee', 'a', 'a', '2', ' 12', ' 12355', 'aa');
 
 -- --------------------------------------------------------
 
@@ -178,19 +191,48 @@ INSERT INTO `orders` (`id`, `Status`, `order_name`, `customer_name`, `order_date
 CREATE TABLE `parties` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `contact` varchar(255) NOT NULL,
+  `contact` varchar(50) NOT NULL,
   `address` text NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `gst` varchar(50) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `uh` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `parties`
 --
 
-INSERT INTO `parties` (`id`, `name`, `contact`, `address`, `email`, `phone`, `created_at`) VALUES
-(1, 'a', 'a', 'a', 'shritejmhatre.scipl@gmail.com', '09819740287', '2024-11-21 17:19:07');
+INSERT INTO `parties` (`id`, `name`, `contact`, `address`, `gst`, `email`, `uh`) VALUES
+(2, 'mrunal a', '9819740287', 'test', '1111111111111111', 'billing.panvelmc@gmaaaaaaaaaaail.com', 'a'),
+(3, 'jayesh', '9819740287', 'testing b', '111111111111111', 'a@gmail.com', 'a'),
+(4, 'rupesh', '9819740287', 's', '111111111111', 'Shree@gmail.com', '1112'),
+(5, 'bhairav', '9819740287', 'aaa kontact', '564664646464646', 'billing.panvelmc@gmail.com', 'aaa'),
+(6, 'krupesh', '855478855', 'nerul', '1122334466778899', 'Shreesssss@gmail.com', 'a');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vehicles`
+--
+
+CREATE TABLE `vehicles` (
+  `id` int(11) NOT NULL,
+  `vehicle_type` varchar(50) DEFAULT NULL,
+  `vehicle_no` varchar(50) DEFAULT NULL,
+  `capacity` decimal(10,2) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `vehicles`
+--
+
+INSERT INTO `vehicles` (`id`, `vehicle_type`, `vehicle_no`, `capacity`) VALUES
+(1, 'Truck', 'MH465584', 45.00),
+(2, 'Pick-up', 'MH43 115a45', 5584.00),
+(3, 'Truck', '55879', 55.00),
+(4, 'Bus', 'krupesh', 5898.00),
+(5, 'Bus', '5', 99999999.00),
+(7, 'Truck', 'aaaaaaaaaaaaaaaaaaaaaaaaaaa', 5.00);
 
 --
 -- Indexes for dumped tables
@@ -223,6 +265,13 @@ ALTER TABLE `parties`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `vehicles`
+--
+ALTER TABLE `vehicles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `vehicle_no` (`vehicle_no`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -230,25 +279,31 @@ ALTER TABLE `parties`
 -- AUTO_INCREMENT for table `charges`
 --
 ALTER TABLE `charges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `parties`
 --
 ALTER TABLE `parties`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `vehicles`
+--
+ALTER TABLE `vehicles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Constraints for dumped tables
