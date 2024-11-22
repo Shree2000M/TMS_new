@@ -213,6 +213,11 @@ try {
                         <span class="sub-item">New Booking</span>
                       </a>
                     </li>
+                    <li>
+                      <a href="../forms/addparty.php">
+                        <span class="sub-item">Add Party</span>
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </li>
