@@ -1,115 +1,138 @@
 <?php
-require_once('tcpdf/tcpdf.php'); // Include the TCPDF library
-
 // Database connection
 $conn = new mysqli('localhost', 'root', '', 'transportdb');
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
-// Fetch filtered data for the report
-$query = "SELECT * FROM vehicles";
-if (isset($_POST['vehicle_type']) && $_POST['vehicle_type'] != 'All') {
-    $vehicle_type = $_POST['vehicle_type'];
-    $query .= " WHERE vehicle_type = '$vehicle_type'";
-}
-$query .= " ORDER BY id DESC";
-$result = $conn->query($query);
-
-// Handle Excel export
-if (isset($_POST['export_excel'])) {
-    header("Content-Type: application/vnd.ms-excel");
-    header("Content-Disposition: attachment; filename=vehicles_report.xls");
-    echo "Vehicle Type\tVehicle No\tCapacity (tons)\n";
-    while ($row = $result->fetch_assoc()) {
-        echo "{$row['vehicle_type']}\t{$row['vehicle_no']}\t{$row['capacity']}\n";
-    }
-    exit;
-}
-
-// Handle PDF export
-if (isset($_POST['export_pdf'])) {
-    $pdf = new TCPDF();
-    $pdf->SetCreator(PDF_CREATOR);
-    $pdf->SetAuthor('Transport System');
-    $pdf->SetTitle('Vehicles Report');
-    $pdf->SetHeaderData('', '', 'Vehicles Report', '');
-    $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-    $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
-    $pdf->AddPage();
-
-    // Generate PDF content
-    $html = "<h1>Vehicles Report</h1><table border='1' cellpadding='5'><thead><tr>
-        <th>Vehicle Type</th>
-        <th>Vehicle No</th>
-        <th>Capacity (tons)</th>
-    </tr></thead><tbody>";
-    while ($row = $result->fetch_assoc()) {
-        $html .= "<tr>
-            <td>{$row['vehicle_type']}</td>
-            <td>{$row['vehicle_no']}</td>
-            <td>{$row['capacity']}</td>
-        </tr>";
-    }
-    $html .= "</tbody></table>";
-    $pdf->writeHTML($html);
-    $pdf->Output('vehicles_report.pdf', 'D');
-    exit;
-}
-
-$conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Reports</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Select Report Type</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container mt-4">
-    <h2>Download Vehicle Reports</h2>
-    <form method="POST" action="downloadreports.php">
-        <div class="form-group">
-            <label for="vehicle_type">Filter by Vehicle Type:</label>
-            <select name="vehicle_type" id="vehicle_type" class="form-control">
-                <option value="All">All</option>
-                <option value="Truck">Truck</option>
-                <option value="Bus">Bus</option>
-                <option value="Pick-up">Pick-up</option>
-                <option value="Other">Other</option>
-            </select>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3>Select Report Type</h3>
+            </div>
+            <div class="card-body">
+                <form action="test.php" method="GET" id="report_form" target="_blank">
+                    <!-- Select Report Type -->
+                    <div class="mb-3">
+                        <label for="report_type" class="form-label">Select Report Type</label>
+                        <select id="report_type" name="report_type" class="form-select" required>
+                            <option value="">-- Select Report --</option>
+                            <option value="orders">Orders Report</option>
+                            <option value="vehicle_trip">Vehicle Trip Report</option>
+                            <option value="payment">Payment Report</option>
+                        </select>
+                    </div>
+
+                    <!-- Select Owner for Orders Report -->
+                    <div class="mb-3" id="owner_field" style="display:none;">
+                        <label for="order_name" class="form-label">Select Owner</label>
+                        <select id="order_name" name="order_name" class="form-select">
+                            <option value="">-- Select Owner --</option>
+                            <?php
+                            // Fetch owners from database for orders report
+                            $result = $conn->query("SELECT DISTINCT order_name FROM orders");
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<option value='{$row['order_name']}'>{$row['order_name']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="vehicle_field" style="display:none;">
+                        <label for="order_name" class="form-label">Select Owner</label>
+                        <select id="order_name" name="order_name" class="form-select">
+                            <option value="">-- Select Owner --</option>
+                            <?php
+                            // Fetch owners from database for orders report
+                            $result = $conn->query("SELECT `id`, `vehicle_no`FROM `vehicles` ");
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<option value='{$row['id']}'>{$row['vehicle_no']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                </form>
+            </div>
         </div>
-        <button type="submit" name="export_excel" class="btn btn-success">Export to Excel</button>
-        <button type="submit" name="export_pdf" class="btn btn-danger">Export to PDF</button>
-    </form>
+    </div>
 
-    <hr>
+    <!-- Bootstrap JS (for dynamic form handling) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
-    <h3>Vehicles Data</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Vehicle Type</th>
-                <th>Vehicle No</th>
-                <th>Capacity (tons)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            // Display the fetched data
-            $result = $conn->query($query); // Re-fetch data for display
-            while ($row = $result->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['vehicle_type']); ?></td>
-                    <td><?php echo htmlspecialchars($row['vehicle_no']); ?></td>
-                    <td><?php echo htmlspecialchars($row['capacity']); ?></td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
-</div>
+    <script>
+      document.getElementById('report_type').addEventListener('change', function () {
+    var reportType = this.value;
+    var ownerField = document.getElementById('owner_field');
+    var vehicleField = document.getElementById('vehicle_field');
+    var form = document.getElementById('report_form');
+
+    if (reportType === 'orders') {
+        ownerField.style.display = 'block'; // Show the owner field for orders report
+        vehicleField.style.display = 'none';
+    } else if (reportType === 'vehicle_trip') {
+        ownerField.style.display = 'none'; // Hide for other reports
+        vehicleField.style.display = 'block';
+    }
+
+    // Modify form action based on selected report type
+    if (reportType === 'vehicle_trip') {
+        form.action = '../reports/vehiclereport.php'; // Use only vehicle report page
+        // Ensure only 'id' is passed as a query parameter
+        var vehicleId = document.getElementById('order_name').value;
+        if (vehicleId) {
+            form.action += '?id=' + vehicleId; // Append only 'id' to the URL
+        }
+    } else {
+        form.action = '../reports/test.php'; // Default action for other reports
+    }
+});
+    </script>
+
 </body>
+
 </html>
+
+<?php
+// Close database connection
+$conn->close();
+?>
