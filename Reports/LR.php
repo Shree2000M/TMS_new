@@ -46,8 +46,7 @@ $pdf->Cell(50, 5, $order['order_name'], 1, 0);
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(15, 5, 'Date:', 1, 0);
 $pdf->SetFont('helvetica', '', 8);
-$pdf->Cell(50, 5, $order['order_date'], 1, 1);
-
+$pdf->Cell(50, 5, $order['order_date'], 1, 0);
 
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(25, 5, 'Origin:', 1, 0);
@@ -55,9 +54,10 @@ $pdf->SetFont('helvetica', '', 8);
 $pdf->Cell(50, 5, $order['fromLocation'], 1, 0);
 
 $pdf->SetFont('helvetica', 'B', 8);
-$pdf->Cell(25, 5, 'Destination:', 1, 0);
+$pdf->Cell(18, 5, 'Destination:', 1, 0);
 $pdf->SetFont('helvetica', '', 8);
 $pdf->Cell(50, 5, $order['toLocation'], 1, 1);
+///////////////////////////////
 
 // Add "Payment: To pay" and "Copy for: CONSIGNOR"
 $pdf->Ln(2); // Add some space
@@ -74,11 +74,12 @@ $pdf->Cell(50, 5, 'CONSIGNOR', 1, 1); // Copy for CONSIGNOR
 
 
 // Adding CONSIGNOR and CONSIGNEE Boxes
+
 $pdf->Ln(2);
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(35, 5, 'CONSIGNOR:', 1, 0, 'C');
 $pdf->SetFont('helvetica', '', 8);
-$pdf->Cell(120, 5, 'Name, Address, Contact (consignor info here)', 1, 1, 'L');
+$pdf->Cell(120, 5, 'Name, Address, Contact (consignor info here)', 1, 0, 'L');
 
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(35, 5, 'CONSIGNEE:', 1, 0, 'C');
@@ -90,7 +91,7 @@ $pdf->Ln(2);
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(35, 5, 'CONSIGNEE Address:', 1, 0);
 $pdf->SetFont('helvetica', '', 8);
-$pdf->Cell(120, 5, $order['pickupAddress'], 1, 1, 'L');
+$pdf->Cell(120, 5, $order['pickupAddress'], 1, 0, 'L');
 
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(35, 5, 'SHIPPING Address:', 1, 0);
@@ -163,12 +164,9 @@ $pdf->Ln(2);
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(30, 5, 'PAYMENT:', 1, 0);
 $pdf->SetFont('helvetica', '', 8);
-$pdf->Cell(100, 5, 'To be paid by consignee', 1, 1);
+$pdf->Cell(100, 5, 'To be paid by consignee', 1, 0);
 
-$pdf->SetFont('helvetica', 'B', 8);
-$pdf->Cell(30, 5, 'COPY FOR:', 1, 0);
-$pdf->SetFont('helvetica', '', 8);
-$pdf->Cell(100, 5, 'Consignee', 1, 1);
+
 
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(30, 5, 'REMARKS:', 1, 0);
@@ -181,12 +179,13 @@ $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(40, 5, 'CLAIM AMOUNT:', 1, 0);
 $pdf->SetFont('helvetica', '', 8);
 $pdf->Cell(100, 5, $itemTotal + $chargeTotal, 1, 1);
+$pdf->Ln(2);
 
 $pdf->SetFont('helvetica', 'B', 8);
 $pdf->Cell(40, 5, 'CONSIGNMENT CAUTION:', 1, 1);
 $pdf->SetFont('helvetica', '', 8);
 $pdf->MultiCell(0, 5, "This consignment covered by a set of lorry receipt forms shall be stored at the destination under the control of the transport operator and shall be delivered to or to the order of the consignee whose name is mentioned in the lorry receipt. It will under no circumstance be delivered to consignee or its order, endorsed on the consignee copy or on a separate letter or authority.", 1, 'L', false);
-
+$pdf->Ln(2);
 // Adding Bank Account Details
 $pdf->Ln(2);
 $pdf->SetFont('helvetica', 'B', 8);

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<style>
+       * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+       }
+       body {
+           font-family: Arial, sans-serif;
+           height: 100vh;
+           display: flex;
+           justify-content: flex-end;
+           align-items: center;
+           overflow: hidden;
+       }
+       video {
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100vw; /* Full width */
+           height: 100vh; /* Full height */
+           object-fit: cover; /* Maintain aspect ratio while covering the screen */
+           z-index: -1; /* Keep the video in the background */
+       }
+       .container {
+           background: rgba(0, 0, 0, 0.5); /* Light black shade */
+           border-radius: 15px;
+           padding: 40px;
+           max-width: 400px;
+           width: 100%;
+           text-align: center;
+           margin-right: 50px;
+           color: #fff; /* Make text white for better contrast */
+       }
+       .form-box h2 {
+           color: #fff; /* White text for heading */
+           margin-bottom: 20px;
+           font-size: 26px;
+       }
+       .input-group {
+           margin-bottom: 20px;
+       }
+       .input-group input {
+           width: 100%;
+           padding: 15px;
+           border-radius: 8px;
+           border: 1px solid #ccc;
+           font-size: 16px;
+           color: #333; /* Dark text inside input */
+       }
+       .btn {
+           background-color: #c00;
+           color: white;
+           padding: 15px;
+           border: none;
+           border-radius: 8px;
+           font-size: 16px;
+           cursor: pointer;
+           width: 100%;
+       }
+       .btn:hover {
+           background-color: #a00;
+       }
+       p {
+           margin-top: 20px;
+       }
+       p a {
+           color: #fff;
+           text-decoration: none;
+       }
+       p a:hover {
+           text-decoration: underline;
+       }
+</style>
+</head>
+<body>
+<video autoplay loop muted>
+    <source src="video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+<div class="container">
+<div class="form-box">
+<h2>Login</h2>
+<form>
+<div class="input-group">
+<input type="email" id="email" name="email" placeholder="Email" required>
+</div>
+<div class="input-group">
+<input type="password" id="password" name="password" placeholder="Password" required>
+</div>
+<button type="submit" class="btn">Login</button>
+</form>
+<p>Don't have an account? <a href="#">Sign Up</a></p>
+</div>
+</div>
+</body>
+</html>
