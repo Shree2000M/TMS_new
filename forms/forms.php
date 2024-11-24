@@ -90,7 +90,7 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
         <div class="sidebar-logo">
           <!-- Logo Header -->
           <div class="logo-header" data-background-color="dark">
-            <a href="../index.html" class="logo">
+            <a href="../index.php" class="logo">
               <img
                 src="../assets/img/kaiadmin/logo_light.svg"
                 alt="navbar brand"
@@ -278,7 +278,7 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
           <div class="main-header-logo">
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="dark">
-              <a href="../index.html" class="logo">
+              <a href="../index.php" class="logo">
                 <img
                   src="../assets/img/kaiadmin/logo_light.svg"
                   alt="navbar brand"
@@ -879,7 +879,12 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
                                       <input type="number" class="form-control" id="rate" placeholder="Rate">
                                   </div>
                                   <div class="col-md-3 mb-3">
-                                      <button type="button" class="btn btn-success w-100" onclick="addItem()">Add Item</button>
+                               <button class="btn btn-secondary" onclick="addItem()"><span class="btn-label">
+                               <i class="fa fa-plus"></i>
+                               </span>
+                        Add Item
+                               </button>
+
                                   </div>
                               </div>
                               <h5 class="section-heading mt-4">Items List</h5>
@@ -910,7 +915,12 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
                                       <input type="number" class="form-control" id="chargeAmount" placeholder="Amount">
                                   </div>
                                   <div>
-                                      <button type="button" class="btn btn-success w-100" onclick="addCharge()">Add Charge</button>
+                                      <!-- <button type="button" class="btn btn-success w-100" onclick="addCharge()">Add Charge</button> -->
+                                      <button class="btn btn-secondary w-100" onclick="addCharge()"><span class="btn-label">
+                               <i class="fa fa-plus"></i>
+                               </span>
+                        Add Charge
+                               </button>
                                   </div>
                               </div>
                               <h5 class="section-heading mt-4">Charges List</h5>
@@ -933,7 +943,7 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
                       </div>
                       </div>
                   <div class="card-action">
-                    <button class="btn btn-success" onclick="submitData()">Submit</button>
+                    <button id="alert_demo_3_3" class="btn btn-success" onclick="submitData()">Submit</button>
                     <button class="btn btn-danger">Cancel</button>
                   </div>
                 </div>
@@ -1205,7 +1215,7 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
     <!-- Kaiadmin DEMO methods, don't include it in your project! -->
     <script src="../assets/js/setting-demo2.js"></script>
     <script>
-      let itemList = [];
+let itemList = [];
       let chargesList = [];
   
        // Add an item to the list
@@ -1353,7 +1363,7 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
               charges: chargesList
           };
   
-          fetch('http://localhost/TMS_NEW/forms/index.php', {
+          fetch('index.php', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json'
@@ -1361,20 +1371,37 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
               body: JSON.stringify(data)
           })
           .then(response => response.json())
-          .then(data => {
-              alert(data.message);
+          .then(data =>{            
+              // alert(data.message);
               if (data.success) {
                   itemList = [];
                   chargesList = [];
                   updateItemsTable();
                   updateChargesTable();
+
+                  /////////////////to show pop up after successfully submit
+                  swal("Booking Done!", "You can get it on booking list!", {
+              icon: "success",
+              buttons: {
+                confirm: {
+                  className: "btn btn-success",
+                },
+              },
+            });
+            
+
               }
+              
           })
           .catch(error => {
               console.error("Error:", error);
               alert("Submission failed.");
           });
       }
+   
+      
+
+      
   </script>
   </body>
 </html>

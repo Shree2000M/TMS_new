@@ -1,3 +1,38 @@
+<?php
+// Database connection
+$conn = new mysqli('localhost', 'root', '', 'transportdb');
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch dashboard counts
+$totalOrders = 0;
+$totalAmount = 0;
+$partys = 0;
+$pendingOrders = 0;
+
+
+// Query for Total Orders and Total Amount
+$result = $conn->query("SELECT COUNT(*) AS total_orders FROM orders");
+if ($row = $result->fetch_assoc()) {
+    $totalOrders = $row['total_orders'];
+    $totalAmount = $row['total_amount'] ?? 0; // Ensure total_amount isn't NULL
+}
+
+// Query for Paid Orders
+$result = $conn->query("SELECT COUNT(*) AS partys FROM parties ");
+if ($row = $result->fetch_assoc()) {
+    $partys = $row['partys'];
+}
+
+// Query for Pending Orders
+$result = $conn->query("SELECT COUNT(*) AS pending_orders FROM orders WHERE status = 'Pending'");
+if ($row = $result->fetch_assoc()) {
+    $pendingOrders = $row['pending_orders'];
+}
+
+$conn->close();
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -646,8 +681,8 @@
                       </div>
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
-                          <p class="card-category">Visitors</p>
-                          <h4 class="card-title">1,294</h4>
+                          <p class="card-category">Parties</p>
+                          <h4 class="card-title"><?php echo $partys; ?></h4>
                         </div>
                       </div>
                     </div>
@@ -667,8 +702,8 @@
                       </div>
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
-                          <p class="card-category">Subscribers</p>
-                          <h4 class="card-title">1303</h4>
+                          <p class="card-category">Oders</p>
+                          <h4 class="card-title"><?php echo $totalOrders; ?></h4>
                         </div>
                       </div>
                     </div>

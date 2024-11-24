@@ -10,7 +10,8 @@ try {
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Query to fetch data
-    $query = "SELECT `id`, `Status`, `order_name`, `customer_name`, `order_date`, `Vehicleno`, `DriverName` FROM `orders`";
+    $query = "SELECT a.id,        a.Status,        p1.name AS order_name,        p2.name as customer_name,        a.order_date,       v.vehicle_no as Vehicleno,        a.DriverName FROM `orders` a JOIN parties p1 ON a.order_name = p1.id JOIN parties p2 ON a.customer_name = p2.id join vehicles
+ v on v.id=a.vehicletype";
     $stmt = $conn->prepare($query);
     $stmt->execute();
 
@@ -71,7 +72,7 @@ try {
         <div class="sidebar-logo">
           <!-- Logo Header -->
           <div class="logo-header" data-background-color="dark">
-            <a href="../index.html" class="logo">
+            <a href="../index.php" class="logo">
               <img
                 src="../assets/img/kaiadmin/logo_light.svg"
                 alt="navbar brand"
@@ -254,7 +255,7 @@ try {
           <div class="main-header-logo">
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="dark">
-              <a href="../index.html" class="logo">
+              <a href="../index.php" class="logo">
                 <img
                   src="../assets/img/kaiadmin/logo_light.svg"
                   alt="navbar brand"

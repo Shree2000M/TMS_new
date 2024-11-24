@@ -60,7 +60,7 @@ if ($data) {
             }
         }
 
-        echo json_encode(["success" => true, "message" => "Data successfully submitted."]);
+        echo json_encode(["success" => true, "message" => "$orderId"]);
     } else {
         echo json_encode(["success" => false, "message" => "Failed to create order."]);
     }
