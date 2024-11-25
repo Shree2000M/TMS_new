@@ -820,27 +820,16 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
                               <div class="row">
                                   
                                   <div class="col-md-6 mb-3">
-                                      <!-- <label for="transportMode" class="form-label">Vehicle Type</label>
+                                      <label for="transportMode" class="form-label">Vehicle Type</label>
                                       <select class="form-select form-control" name="vehicletype" id="vehicletype" required>
                                           <option value="">Select Vehicle</option>
                                           <option value="Road">Truck</option>
                                           <option value="Air">Bus</option>
                                           <option value="Sea">Pick-Up</option>
                                           <option value="Rail">Other</option>
-                                      </select> -->
+                                      </select>
 
-                                      <label for="vehicle">Select Vehicle</label>
-            <select name="vehicletype" id="vehicletype" class="form-control" required>
-                <option value="" disabled selected>Select Vehicle</option>
-                
-                <?php
-                // Fetch vehicles for the dropdown
-$vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicles ORDER BY vehicle_type ASC");
-
-                while ($vehicle = $vehicles_query->fetch_assoc()): ?>
-                    <option value="<?php echo $vehicle['id']; ?>"><?php echo htmlspecialchars($vehicle['vehicle_type']) . ' - ' . htmlspecialchars($vehicle['vehicle_no']); ?></option>
-                <?php endwhile; ?>
-            </select>
+                                      
 
                                   </div>
                                   
@@ -851,8 +840,21 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
                                       <input type="text" class="form-control" id="Vehiclecapacity" name="Vehiclecapacity" placeholder="Enter Vehicl's Capecity" required>
                                   </div>
                                   <div class="col-md-6 mb-3">
-                                      <label for="consignee" class="form-label">Vehicle No.</label>
-                                      <input type="text" class="form-control" name="Vehicleno" id="Vehicleno" placeholder="Enter Vehicle No" required>
+                                      <!-- <label for="consignee" class="form-label">Vehicle No.</label>
+                                      <input type="text" class="form-control" name="Vehicleno" id="Vehicleno" placeholder="Enter Vehicle No" required> -->
+
+                                      <label for="vehicle">Select Vehicle</label>
+            <select name="Vehicleno" id="Vehicleno" class="form-control" required>
+                <option value="" disabled selected>Select Vehicle</option>
+                
+                <?php
+                // Fetch vehicles for the dropdown
+$vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicles ORDER BY vehicle_type ASC");
+
+                while ($vehicle = $vehicles_query->fetch_assoc()): ?>
+                    <option value="<?php echo $vehicle['id']; ?>"><?php echo htmlspecialchars($vehicle['vehicle_type']) . ' - ' . htmlspecialchars($vehicle['vehicle_no']); ?></option>
+                <?php endwhile; ?>
+            </select>
                                   </div>
                               </div>
                               <div class="mb-3">
