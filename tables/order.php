@@ -815,8 +815,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="status" class="form-label">Select Status</label>
                     <select name="status" id="status" class="form-select">
                         <option value="Initiated" <?php echo ($order['Status'] == 'Initiated') ? 'selected' : ''; ?>>Initiated</option>
-                        <option value="Bill Pending" <?php echo ($order['Status'] == 'Bill Pending') ? 'selected' : ''; ?>>Bill Pending</option>
-                        <option value="Paid" <?php echo ($order['Status'] == 'Paid') ? 'selected' : ''; ?>>Paid</option>
+                        <option value="Delivered" <?php echo ($order['Status'] == 'Delivered') ? 'selected' : ''; ?>>Delivered</option>
+                      
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary">Update Status</button>

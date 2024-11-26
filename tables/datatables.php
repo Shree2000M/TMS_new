@@ -695,7 +695,7 @@ try {
         background-color: <?php
             if ($order['Status'] === 'Initiated') {
                 echo '#FFD700'; // Yellow
-            } elseif ($order['Status'] === 'Bill Pending') {
+            } elseif ($order['Status'] === 'Delivered') {
                 echo '#FF4500'; // Red
             } elseif ($order['Status'] === 'Paid') {
                 echo '#32CD32'; // Green
