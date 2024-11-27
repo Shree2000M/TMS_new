@@ -6,7 +6,38 @@ if ($conn->connect_error) {
 }
 
 // Fetch payment pending orders
-$query = "select o.id,o.order_date,p.name,'600' as amount from orders o join parties p on o.order_name=p.id";
+$query = "SELECT 
+    o.id AS order_id,
+    pr.name as order_name,
+    o.customer_name,
+    o.order_date,
+    COALESCE(item_totals.total_items_amount, 0) AS total_items_amount,
+    COALESCE(charge_totals.total_charges, 0) AS total_charges,
+    COALESCE(item_totals.total_items_amount, 0) + COALESCE(charge_totals.total_charges, 0) AS grand_total
+FROM 
+    orders o
+LEFT JOIN 
+    (
+        SELECT 
+            order_id, 
+            SUM(amount) AS total_items_amount
+        FROM 
+            items
+        GROUP BY 
+            order_id
+    ) AS item_totals ON o.id = item_totals.order_id
+LEFT JOIN 
+    (
+        SELECT 
+            order_id, 
+            SUM(amount) AS total_charges
+        FROM 
+            charges
+        GROUP BY 
+            order_id
+    ) AS charge_totals ON o.id = charge_totals.order_id 
+    join parties pr on pr.id=o.order_name
+";
 $result = $conn->query($query);
 ?>
 <!DOCTYPE html>
@@ -25,9 +56,11 @@ $result = $conn->query($query);
                 <thead>
                     <tr class="table-primary">
                         <th>Order ID</th>
-                        <th>Order Date</th>
                         <th>Party Name</th>
-                        <th>Amount</th>
+                        <th>Order Date</th>
+                        <th>Items Total</th>
+                        <th>Chanrges Total</th>
+                        <th>Grand Total</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -35,13 +68,15 @@ $result = $conn->query($query);
                     <?php if ($result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
-                                <td><?php echo $row['id']; ?></td>
+                                <td><?php echo $row['order_id']; ?></td>
+                                <td><?php echo $row['order_name']; ?></td>
                                 <td><?php echo $row['order_date']; ?></td>
-                                <td><?php echo $row['name']; ?></td>
-                                <td><?php echo number_format($row['amount'], 2); ?></td>
+                                <td><?php echo number_format($row['total_items_amount'], 2); ?></td>
+                                <td><?php echo number_format($row['total_charges'], 2); ?></td>
+                                <td><?php echo number_format($row['grand_total'], 2); ?></td>
                                 <td>
-                                    <a href="submitpayment.php?orderid=<?php echo $row['id']; ?>" 
-                                       class="btn btn-primary btn-sm">Submit Payment</a>
+                                    <a href="submitpayment.php?order_id=<?php echo $row['order_id']; ?>" 
+                                       class="btn btn-primary btn-sm">Collect payment</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

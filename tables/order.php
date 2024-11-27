@@ -16,9 +16,11 @@ try {
 
     // Fetch all records
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+   
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -676,14 +678,29 @@ if ($conn->connect_error) {
 }
 
 $orderId = $_GET['id'];
-$orderResult = $conn->query("SELECT * FROM orders WHERE id = $orderId");
+$orderResult = $conn->query("SELECT o.id , `Status`, p.name as CONSIGNOR ,p.address as CONSIGNORADDRESS,P.contact AS ConsignorContact,p.email as ConsignorEmail, p2.name as ConsigneeName,p2.address as consigneeaddress , p2.contact as consigneecontact,p2.email as consigneeemail, `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName` FROM `orders` o join parties p on o.order_name=p.id join parties p2 on o.customer_name=p2.id where  o.id = $orderId");
 $order = $orderResult->fetch_assoc();
+
+$payments_query = "SELECT * FROM payments WHERE order_id = $orderId";
+$payments_result = $conn->query($payments_query);
+
+$paymentstotal_query = "SELECT sum(paying_amount) as totalamt FROM payments WHERE order_id = $orderId";
+$payments_result_total = $conn->query($paymentstotal_query);
+
+$sumpayment = 0;
+while ($sumofpay = $payments_result_total->fetch_assoc()) {
+  $sumpayment= $sumofpay['totalamt']; // Sum up charge amounts
+}
+
+
 
 // Fetch items
 $itemResult = $conn->query("SELECT * FROM items WHERE order_id = $orderId");
 
 // Fetch charges
 $chargeResult = $conn->query("SELECT * FROM charges WHERE order_id = $orderId");
+
+
 
 // Calculate subtotals
 $itemTotal = 0;
@@ -724,20 +741,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </span>
     </div>
 
-    <h1 class="mb-4">Order Details (ID: <?php echo $orderId; ?>)</h1>
+    <h1 class="mb-4">Booking Details (ID: <?php echo $orderId; ?>)</h1>
 
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">Basic Information</div>
-        <div class="card-body">
-            <p><strong>Consignor:</strong> <?php echo $order['order_name']; ?></p>
-            <p><strong>Consignee:</strong> <?php echo $order['customer_name']; ?></p>
-            <p><strong>Order Date:</strong> <?php echo $order['order_date']; ?></p>
-            <p><strong>From:</strong> <?php echo $order['fromLocation']; ?></p>
-            <p><strong>To:</strong> <?php echo $order['toLocation']; ?></p>
-            <p><strong>Vehicle No:</strong> <?php echo $order['Vehicleno']; ?></p>
-            <p><strong>Driver Name:</strong> <?php echo $order['DriverName']; ?></p>
+   <div class="card mb-4 shadow-sm border-light">
+    <div class="card-header bg-primary text-white fw-bold">
+        <i class="bi bi-info-circle-fill"></i> Basic Information
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Consignor -->
+            <div class="col-md-3 mb-3">
+                <p><strong class="text-dark">Consignor:</strong> <span><?php echo $order['CONSIGNOR']; ?></span></p>
+            </div>
+            <!-- Consignee -->
+            <div class="col-md-3 mb-3">
+                <p><strong class="text-dark">Consignee:</strong> <span><?php echo $order['ConsigneeName']; ?></span></p>
+            </div>
+
+            <!-- Order Date -->
+            <div class="col-md-6 mb-3">
+                <p><strong class="text-dark">Order Date:</strong><span><?php echo $order['order_date']; ?></span></p>
+            </div>
+            <!-- From Location -->
+            <div class="col-md-6 mb-3">
+                <p><strong class="text-dark">From:</strong> <span><?php echo $order['fromLocation']; ?></span></p>
+            </div>
+            <!-- To Location -->
+            <div class="col-md-6 mb-3">
+                <p><strong class="text-dark">To:</strong> <span><?php echo $order['toLocation']; ?></span></p>
+            </div>
+            <!-- Vehicle Number -->
+            <div class="col-md-6 mb-3">
+                <p><strong class="text-dark">Vehicle No:</strong> <span><?php echo $order['Vehicleno']; ?></span></p>
+                <p><strong class="text-dark">Driver Name:</strong><span><?php echo $order['DriverName']; ?></span></p>
+            </div>
         </div>
     </div>
+</div>
+
+
 
     <div class="card mb-4">
         <div class="card-header bg-success text-white">Items</div>
@@ -803,12 +845,84 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <p><strong>Charges Subtotal:</strong> <?php echo number_format($chargeTotal, 2); ?></p>
             <hr>
             <p><strong>Total Subtotal:</strong> <?php echo number_format($subtotal, 2); ?></p>
+
+            <p class='alert alert-success'><strong>Total Paid Amount:</strong> <?php echo number_format($sumpayment, 2); ?></p>
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      Check Payment History
+    </button>
         </div>
+        
+       
+        
+
     </div>
 
-    <!-- Update Status Section -->
+    <!-- Payment History Pop Up -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg"> <!-- Use modal-lg for a larger modal -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Payment History</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h3 class="mt-3">Payment History</h3>
+        <div class="table-responsive"> <!-- Ensure responsiveness -->
+          <table class="table table-bordered table-hover">
+            <thead class="table-primary">
+              <tr>
+                <th>Payment ID</th>
+                <th>Paying Amount</th>
+                <th>Mode</th>
+                <th>Date</th>
+                <th>Remark</th>
+                <th>Slip</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php if (isset($payments_result) && $payments_result->num_rows > 0): ?>
+                <?php while ($payment = $payments_result->fetch_assoc()): ?>
+                  <tr>
+                    <td><?php echo htmlspecialchars($payment['id']); ?></td>
+                    <td>₹<?php echo number_format($payment['paying_amount'], 2); ?></td>
+                    <td><?php echo htmlspecialchars($payment['payment_mode']); ?></td>
+                    <td><?php echo htmlspecialchars($payment['payment_date']); ?></td>
+                    <td><?php echo htmlspecialchars($payment['remark']); ?></td>
+                    <td>
+                                    <a href="../Reports/payslip.php?payid=<?php echo $payment['id']; ?>" 
+                                       class="btn btn-primary btn-sm" target="_blank">Open</a>
+                                </td>
+                  </tr>
+                <?php endwhile; ?>
+              <?php else: ?>
+                <tr>
+                  <td colspan="5" class="text-center">No payments recorded yet.</td>
+                </tr>
+              <?php endif; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- end Payment History Pop-Up -->
+
+    
+<div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg"> <!-- Use modal-lg for a larger modal -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Update Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Update Status Section -->
     <div class="card mb-4">
-        <div class="card-header bg-secondary text-white">Update Status</div>
         <div class="card-body">
             <form method="POST" action="">
                 <div class="mb-3">
@@ -823,14 +937,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
         </div>
     </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal1">
+      UPDATE STATUS
+    </button>
+    <br><br>
+
+    
+
+
+
+    
     <!-- Action Buttons Section -->
     <div class="d-flex justify-content-between">
+    
         <a href="../Reports/LR.php?orderId=<?php echo $orderId; ?>" class="btn btn-primary" target="_blank">Generate LR Document</a>
         <a href="../Reports/report.php?id=<?php echo $orderId; ?>" class="btn btn-success" target="_blank">Generate Invoice</a>
         <a href="../Reports/report.php?orderId=<?php echo $orderId; ?>" class="btn btn-danger" target="_blank">Download PDF</a>
     </div>
+    
 
+    <!-- end of area -->
                   </div>
                 </div>
               </div>
