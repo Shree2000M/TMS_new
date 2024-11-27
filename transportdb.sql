@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 24, 2024 at 04:33 PM
+-- Generation Time: Nov 27, 2024 at 06:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -41,7 +41,10 @@ CREATE TABLE `charges` (
 INSERT INTO `charges` (`id`, `order_id`, `charge_name`, `amount`) VALUES
 (1, 1, 'GST', 100.00),
 (2, 1, 'TOLL', 1585.00),
-(3, 1, 'driver allows ', 25478.00);
+(3, 1, 'driver allows ', 25478.00),
+(4, 2, 'GST', 100.00),
+(5, 2, 'Toll', 500.00),
+(6, 2, 'Driver Bhatta', 1254.00);
 
 -- --------------------------------------------------------
 
@@ -65,7 +68,9 @@ CREATE TABLE `items` (
 
 INSERT INTO `items` (`id`, `order_id`, `item_name`, `quantity`, `weight`, `rate`, `amount`) VALUES
 (1, 1, 'pant', 100, 100.00, 1254.00, 125400.00),
-(2, 1, 'shirts ', 1254, 558.00, 5525.00, 6928350.00);
+(2, 1, 'shirts ', 1254, 558.00, 5525.00, 6928350.00),
+(3, 2, 'Wheels ', 500, 200.00, 28.00, 14000.00),
+(4, 2, 'Tyres', 1024, 52.00, 22.00, 22528.00);
 
 -- --------------------------------------------------------
 
@@ -97,7 +102,8 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `Status`, `order_name`, `customer_name`, `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName`) VALUES
-(1, 'Initiated', '2', '3', '2024-11-07', 'kon gaon', 'panvel', 'Air', 'Consignor', 'Consignor', 'back yard goodds near applolo tyres panvel', 'middle class society panvel', '2', ' 125478', 2220, 'Mayur shisave');
+(1, 'Paid', '2', '3', '2024-11-07', 'kon gaon', 'panvel', 'Air', 'Consignor', 'Consignor', 'back yard goodds near applolo tyres panvel', 'middle class society panvel', '2', ' 125478', 2220, 'Mayur shisave'),
+(2, 'Paid', '1', '3', '2024-11-26', 'Adai', 'Panvel', '', 'Consignor', 'Consignor', 'Land mark society near adai New panvel bridge, New panvel ,Raigad 410206', 'Yogendra ho op housing society panvel , raigad 410206', '2', ' 125478', 0, 'Somnath padekar');
 
 -- --------------------------------------------------------
 
@@ -125,6 +131,36 @@ INSERT INTO `parties` (`id`, `name`, `gst`, `uh`, `contact`, `address`, `email`,
 (1, 'Sahil transport PVT LTD', '1125478955', '11233654', '8104678066', 'at kon post ajivali tel panvel', 'shritejmhatre.scipl@gmail.com', '09819740287', '2024-11-21 17:19:07'),
 (2, 'shreeyash mhatre aa', '111111111111111111111', 'test', '9819740287', 'at kon post ajivali near to applolo tyres new panvel', 'Shreeyash@gmail.com', NULL, '2024-11-24 05:47:30'),
 (3, 'Shritej mhatre', '1122554778963', 'a', '9833123247', 'middle class society type a building plot 10 panvel raigad 410206', 'a@gmail.com', NULL, '2024-11-24 07:10:48');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payments`
+--
+
+CREATE TABLE `payments` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `paying_amount` decimal(10,2) NOT NULL,
+  `payment_mode` varchar(255) NOT NULL,
+  `payment_date` date NOT NULL,
+  `remark` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`id`, `order_id`, `paying_amount`, `payment_mode`, `payment_date`, `remark`, `created_at`) VALUES
+(7, 1, 2000.00, 'Cash', '2024-12-31', '200', '2024-11-26 18:33:24'),
+(8, 1, 27163.00, 'Cash', '2000-02-02', 'done', '2024-11-26 18:34:14'),
+(9, 1, 500.00, 'Cash', '2024-12-30', '100', '2024-11-26 18:36:03'),
+(10, 2, 1854.00, 'Card', '2000-02-02', 'test', '2024-11-26 18:37:33'),
+(11, 2, 1854.00, 'Cash', '2024-12-31', '200', '2024-11-26 18:39:43'),
+(12, 2, 1854.00, 'Cash', '2000-02-02', '200', '2024-11-26 18:40:02'),
+(13, 2, 1854.00, 'Cash', '2000-02-02', 'test', '2024-11-26 18:41:00'),
+(14, 1, 27163.00, 'Card', '2000-02-02', 'test', '2024-11-26 18:46:42');
 
 -- --------------------------------------------------------
 
@@ -179,6 +215,13 @@ ALTER TABLE `parties`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `payments`
+--
+ALTER TABLE `payments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_id` (`order_id`);
+
+--
 -- Indexes for table `vehicles`
 --
 ALTER TABLE `vehicles`
@@ -193,25 +236,31 @@ ALTER TABLE `vehicles`
 -- AUTO_INCREMENT for table `charges`
 --
 ALTER TABLE `charges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `parties`
 --
 ALTER TABLE `parties`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `payments`
+--
+ALTER TABLE `payments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `vehicles`
@@ -234,6 +283,12 @@ ALTER TABLE `charges`
 --
 ALTER TABLE `items`
   ADD CONSTRAINT `items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `payments`
+--
+ALTER TABLE `payments`
+  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
