@@ -241,6 +241,11 @@ try {
                         <span class="sub-item">Booking List</span>
                       </a>
                     </li>
+                    <li>
+                      <a href="../tables/paymentpending.php">
+                        <span class="sub-item">Collect Payment</span>
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </li>
