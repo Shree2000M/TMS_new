@@ -794,7 +794,7 @@ if (isset($_GET['edit_id'])) {
         <footer class="footer">
           <div class="container-fluid d-flex justify-content-between">
             <nav class="pull-left">
-              <ul class="nav">
+              <!-- <ul class="nav">
                 <li class="nav-item">
                   <a class="nav-link" href="http://www.themekita.com">
                     ThemeKita
@@ -806,15 +806,15 @@ if (isset($_GET['edit_id'])) {
                 <li class="nav-item">
                   <a class="nav-link" href="#"> Licenses </a>
                 </li>
-              </ul>
+              </ul> -->
             </nav>
             <div class="copyright">
               2024, made with <i class="fa fa-heart heart text-danger"></i> by
-              <a href="http://www.themekita.com">ThemeKita</a>
+              <a href="http://www.themekita.com">SecurX</a>
             </div>
-            <div>
+             <div>
               Distributed by
-              <a target="_blank" href="https://themewagon.com/">ThemeWagon</a>.
+              <a target="_blank">SecurX</a>.
             </div>
           </div>
         </footer>

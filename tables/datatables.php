@@ -694,9 +694,9 @@ try {
         border-radius: 5px;
         background-color: <?php
             if ($order['Status'] === 'Initiated') {
-                echo '#FFD700'; // Yellow
+                echo '#0099ff'; // Yellow
             } elseif ($order['Status'] === 'Delivered') {
-                echo '#FF4500'; // Red
+                echo '#e6e600'; // Red
             } elseif ($order['Status'] === 'Paid') {
                 echo '#32CD32'; // Green
             } else {
@@ -744,7 +744,7 @@ try {
         <footer class="footer">
           <div class="container-fluid d-flex justify-content-between">
             <nav class="pull-left">
-              <ul class="nav">
+              <!-- <ul class="nav">
                 <li class="nav-item">
                   <a class="nav-link" href="http://www.themekita.com">
                     ThemeKita
@@ -756,15 +756,15 @@ try {
                 <li class="nav-item">
                   <a class="nav-link" href="#"> Licenses </a>
                 </li>
-              </ul>
+              </ul> -->
             </nav>
             <div class="copyright">
               2024, made with <i class="fa fa-heart heart text-danger"></i> by
-              <a href="http://www.themekita.com">ThemeKita</a>
+              <a href="http://www.themekita.com">SecurX</a>
             </div>
-            <div>
+             <div>
               Distributed by
-              <a target="_blank" href="https://themewagon.com/">ThemeWagon</a>.
+              <a target="_blank">SecurX</a>.
             </div>
           </div>
         </footer>
