@@ -731,20 +731,26 @@ $subtotal = $itemTotal + $chargeTotal; // Combine both totals
 
 // Update the status if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $newStatus = $_POST['status'];
-    $updateStatusQuery = "UPDATE orders SET Status = '$newStatus' WHERE id = $orderId";
-    if ($conn->query($updateStatusQuery) === TRUE) {
-        // Show a success alert and reload the page
-        echo "<script>
-                alert('Status updated successfully!');
-                window.location.reload();
-              </script>";
-    } else {
-        echo "<script>
-                alert('Error updating status');
-              </script>";
-    }
+  $newStatus = $_POST['status'];
+  
+  // Prepare the update query using a prepared statement to prevent SQL injection
+  $updateStatusQuery = "UPDATE orders SET Status = :status WHERE id = :orderId";
+  $stmt = $conn->prepare($updateStatusQuery);
+
+  // Bind the parameters to the query
+  $stmt->bindParam(':status', $newStatus, PDO::PARAM_STR);
+  $stmt->bindParam(':orderId', $orderId, PDO::PARAM_INT);
+
+  // Execute the statement and check if it's successful
+  if ($stmt->execute()) {
+      
+  } else {
+      echo "<script>
+              alert('Error updating status');
+            </script>";
+  }
 }
+
 ?>
 
 
@@ -894,26 +900,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </tr>
             </thead>
             <tbody>
-              <?php if (isset($payments_result) && $payments_result->num_rows > 0): ?>
-                <?php while ($payment = $payments_result->fetch_assoc()): ?>
-                  <tr>
-                    <td><?php echo htmlspecialchars($payment['id']); ?></td>
-                    <td>₹<?php echo number_format($payment['paying_amount'], 2); ?></td>
-                    <td><?php echo htmlspecialchars($payment['payment_mode']); ?></td>
-                    <td><?php echo htmlspecialchars($payment['payment_date']); ?></td>
-                    <td><?php echo htmlspecialchars($payment['remark']); ?></td>
-                    <td>
-                                    <a href="../Reports/payslip.php?payid=<?php echo $payment['id']; ?>" 
-                                       class="btn btn-primary btn-sm" target="_blank">Open</a>
-                                </td>
-                  </tr>
-                <?php endwhile; ?>
-              <?php else: ?>
-                <tr>
-                  <td colspan="5" class="text-center">No payments recorded yet.</td>
-                </tr>
-              <?php endif; ?>
-            </tbody>
+  <?php if (isset($payments_result) && $payments_result->rowCount() > 0): ?>
+    <?php while ($payment = $payments_result->fetch(PDO::FETCH_ASSOC)): ?>
+      <tr>
+        <td><?php echo htmlspecialchars($payment['id']); ?></td>
+        <td>₹<?php echo number_format($payment['paying_amount'], 2); ?></td>
+        <td><?php echo htmlspecialchars($payment['payment_mode']); ?></td>
+        <td><?php echo htmlspecialchars($payment['payment_date']); ?></td>
+        <td><?php echo htmlspecialchars($payment['remark']); ?></td>
+        <td>
+          <a href="../Reports/payslip.php?payid=<?php echo urlencode($payment['id']); ?>" 
+             class="btn btn-primary btn-sm" target="_blank">Open</a>
+        </td>
+      </tr>
+    <?php endwhile; ?>
+  <?php else: ?>
+    <tr>
+      <td colspan="6" class="text-center">No payments recorded yet.</td>
+    </tr>
+  <?php endif; ?>
+</tbody>
+
           </table>
         </div>
       </div>

@@ -4,6 +4,7 @@
 $order_id = isset($_GET['order_id']) ? $_GET['order_id'] : null;
 ?>
 <?php
+
 // Database connection
 $conn = new mysqli('localhost', 'root', '', 'transportdb');
 if ($conn->connect_error) {
