@@ -1,17 +1,10 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "transportdb";
+include '../db_connect.php';
 
 try {
-    // Create a connection
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Query to fetch data
+   // Query to fetch data
     $query = "SELECT a.id,        a.Status,        p1.name AS order_name,        p2.name as customer_name,        a.order_date,       v.vehicle_no as Vehicleno,        a.DriverName FROM `orders` a JOIN parties p1 ON a.order_name = p1.id JOIN parties p2 ON a.customer_name = p2.id join vehicles
- v on v.id=a.vehicletype";
+ v on v.id=a.Vehicleno";
     $stmt = $conn->prepare($query);
     $stmt->execute();
 
@@ -662,9 +655,84 @@ try {
                 <div class="card">
                   <div class="card-header">
                     <h4 class="card-title">Basic</h4>
+                    <div class="row">
+              <div class="col-6 col-sm-4 col-lg-2">
+                <div class="card">
+                  <div class="card-body p-3 text-center">
+                    <div class="text-end text-success">
+                      6%
+                      <i class="fa fa-chevron-up"></i>
+                    </div>
+                    <div class="h1 m-0">43</div>
+                    <div class="text-muted mb-3">New Bookings</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-4 col-lg-2">
+                <div class="card">
+                  <div class="card-body p-3 text-center">
+                    <div class="text-end text-danger">
+                      -3%
+                      <i class="fa fa-chevron-down"></i>
+                    </div>
+                    <div class="h1 m-0">17</div>
+                    <div class="text-muted mb-3">Delhivered</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-4 col-lg-2">
+                <div class="card">
+                  <div class="card-body p-3 text-center">
+                    <div class="text-end text-success">
+                      9%
+                      <i class="fa fa-chevron-up"></i>
+                    </div>
+                    <div class="h1 m-0">7</div>
+                    <div class="text-muted mb-3">Payment Done</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-4 col-lg-2">
+                <div class="card">
+                  <div class="card-body p-3 text-center">
+                    <div class="text-end text-success">
+                      3%
+                      <i class="fa fa-chevron-up"></i>
+                    </div>
+                    <div class="h1 m-0">27.3K</div>
+                    <div class="text-muted mb-3">Followers</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-4 col-lg-2">
+                <div class="card">
+                  <div class="card-body p-3 text-center">
+                    <div class="text-end text-danger">
+                      -2%
+                      <i class="fa fa-chevron-down"></i>
+                    </div>
+                    <div class="h1 m-0">$95</div>
+                    <div class="text-muted mb-3">Daily Earnings</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-4 col-lg-2">
+                <div class="card">
+                  <div class="card-body p-3 text-center">
+                    <div class="text-end text-danger">
+                      -1%
+                      <i class="fa fa-chevron-down"></i>
+                    </div>
+                    <div class="h1 m-0">621</div>
+                    <div class="text-muted mb-3">Products</div>
+                  </div>
+                </div>
+              </div>
+            </div>
                   </div>
                   <div class="card-body">
                     <div class="table-responsive">
+                      
                       <table
                         id="basic-datatables"
                         class="table table-striped table-bordered table-hover"

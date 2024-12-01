@@ -42,12 +42,14 @@ if ($data) {
         if (!empty($data['items'])) {
             foreach ($data['items'] as $item) {
                 $itemName = $conn->real_escape_string($item['itemName']);
+                $parceltype = $conn->real_escape_string($item['parceltype']);
                 $quantity = $conn->real_escape_string($item['quantity']);
                 $weight = $conn->real_escape_string($item['weight']);
+                $itemtax = $conn->real_escape_string($item['itemtax']);
                 $rate = $conn->real_escape_string($item['rate']);
                 $amount = $conn->real_escape_string($item['amount']);
-                $conn->query("INSERT INTO items (order_id, item_name, quantity, weight, rate, amount) 
-                              VALUES ('$orderId', '$itemName', '$quantity', '$weight', '$rate', '$amount')");
+                $conn->query("INSERT INTO items (order_id, item_name, parceltype, quantity, weight, itemtax, rate, amount) 
+                              VALUES ('$orderId', '$itemName', '$parceltype', '$quantity', '$weight', '$itemtax', '$rate', '$amount')");
             }
         }
 

@@ -1,9 +1,6 @@
 <?php
-// Database connection
-$conn = new mysqli('localhost', 'root', '', 'transportdb');
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include 'db_connect.php';
+
 
 // Fetch dashboard counts
 $totalOrders = 0;
@@ -14,24 +11,26 @@ $pendingOrders = 0;
 
 // Query for Total Orders and Total Amount
 $result = $conn->query("SELECT COUNT(*) AS total_orders FROM orders");
-if ($row = $result->fetch_assoc()) {
+
+if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+  
     $totalOrders = $row['total_orders'];
     $totalAmount = $row['total_amount'] ?? 0; // Ensure total_amount isn't NULL
 }
 
 // Query for Paid Orders
 $result = $conn->query("SELECT COUNT(*) AS partys FROM parties ");
-if ($row = $result->fetch_assoc()) {
+if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     $partys = $row['partys'];
 }
 
 // Query for Pending Orders
 $result = $conn->query("SELECT COUNT(*) AS pending_orders FROM orders WHERE status = 'Pending'");
-if ($row = $result->fetch_assoc()) {
+if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     $pendingOrders = $row['pending_orders'];
 }
 
-$conn->close();
+$pdo = null; 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -84,12 +83,8 @@ $conn->close();
           <!-- Logo Header -->
           <div class="logo-header" data-background-color="dark">
             <a href="index.html" class="logo">
-              <img
-                src="assets/img/kaiadmin/logo_light.svg"
-                alt="navbar brand"
-                class="navbar-brand"
-                height="20"
-              />
+              <i class="bi bi-person-circle fs-3 me-2"></i> <!-- Use Bootstrap icon for a personal touch -->
+  <span class="sidebar-brand-text text-white fs-4 fw-bold">SecurX</span>
             </a>
             <div class="nav-toggle">
               <button class="btn btn-toggle toggle-sidebar">

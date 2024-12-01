@@ -1,14 +1,7 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "transportdb";
-
+include '../db_connect.php';
 try {
-    // Create a connection
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+   
     // Query to fetch data
     $query = "SELECT `id`, `Status`, `order_name`, `customer_name`, `order_date`, `Vehicleno`, `DriverName` FROM `orders`";
     $stmt = $conn->prepare($query);

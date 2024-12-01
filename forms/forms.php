@@ -1,5 +1,10 @@
 
 <?php
+// Display all errors
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Database connection
 $conn = new mysqli('localhost', 'root', '', 'transportdb');
 if ($conn->connect_error) {
@@ -865,17 +870,47 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
                           
                           
                           <!-- Items Section -->
-                          <div class="section-card text-bg-light p-3">
+                          <div class="section-card text-bg-light p-2">
                               <h5 class="section-heading">Add Items</h5>
                               <div class="row align-items-end">
                                   <div class="col-md-3 mb-3">
                                       <input type="text" class="form-control" id="itemName" placeholder="Item Name">
                                   </div>
+                                  <div class="col-md-3 mb-3">
+                                  <select class="form-control" id="parceltype">
+                                  <option value="Box">Box</option>
+                                  <option value="Bag">Bag</option>
+                                  <option value="Basta">Basta</option>
+                                  <option value="Bundle">Bundle</option>
+                                  <option value="Carton">Carton</option>
+                                  <option value="Dozen">Dozen</option>
+                                  <option value="Drums">Drums</option>
+                                  <option value="Loose">Loose</option>
+                                  <option value="Packet">Packet</option>
+                                  <option value="Pcs">Pcs</option>
+                                  <option value="Roll">Roll</option>
+                                    </select>
+
+                                  </div>
+                                  
                                   <div class="col-md-2 mb-3">
                                       <input type="number" class="form-control" id="quantity" placeholder="Quantity">
                                   </div>
                                   <div class="col-md-2 mb-3">
                                       <input type="number" class="form-control" id="weight" placeholder="Weight (kg)">
+                                  </div>
+                                  <div class="col-md-2 mb-3">
+                                  <select name="gst" id="itemtax"class="form-control">
+                                        <option value="12% GST">12% GST</option>
+                                        <option value="5% GST">5% GST</option>
+                                        <option value="12% GST">12% GST</option>
+                                        <option value="18% GST">18% GST</option>
+                                        <option value="28% GST">28% GST</option>
+                                        <option value="Tax Free">Tax Free</option>
+                                        <option value="28 + 3 CESS">28 + 3 CESS</option>
+                                        <option value="IGST 12%">IGST 12%</option>
+                                    </select>
+
                                   </div>
                                   <div class="col-md-2 mb-3">
                                       <input type="number" class="form-control" id="rate" placeholder="Rate">
@@ -894,8 +929,10 @@ $vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicle
                                   <thead>
                                   <tr>
                                       <th>Item Name</th>
+                                      <th>Parcel Type</th>
                                       <th>Quantity</th>
                                       <th>Weight</th>
+                                      <th>Item Tax</th>
                                       <th>Rate</th>
                                       <th>Amount</th>
                                       <th>Action</th>
@@ -1223,13 +1260,15 @@ let itemList = [];
        // Add an item to the list
        function addItem() {
           const itemName = document.getElementById('itemName').value;
+          const parceltype = document.getElementById('parceltype').value;
           const quantity = document.getElementById('quantity').value;
           const weight = document.getElementById('weight').value;
+          const itemtax = document.getElementById('itemtax').value;
           const rate = document.getElementById('rate').value;
   
           if (itemName && quantity && weight && rate) {
               const amount = (quantity * rate).toFixed(2);
-              itemList.push({ itemName, quantity, weight, rate, amount });
+              itemList.push({ itemName, parceltype, quantity, weight, itemtax, rate, amount });
               updateItemsTable();
               updateTotalCharges();
           } else {
@@ -1238,8 +1277,10 @@ let itemList = [];
   
           // Clear inputs
           document.getElementById('itemName').value = '';
+          document.getElementById('parceltype').value = '';
           document.getElementById('quantity').value = '';
           document.getElementById('weight').value = '';
+          document.getElementById('itemtax').value = '';
           document.getElementById('rate').value = '';
       }
   
@@ -1252,8 +1293,10 @@ let itemList = [];
               const row = tableBody.insertRow();
               row.innerHTML = `
                   <td>${item.itemName}</td>
+                  <td>${item.parceltype}</td>
                   <td>${item.quantity}</td>
                   <td>${item.weight}</td>
+                  <td>${item.itemtax}</td>
                   <td>${item.rate}</td>
                   <td>${item.amount}</td>
                   <td><button class="btn btn-danger btn-sm" onclick="removeItem(${index})">Remove</button></td>
