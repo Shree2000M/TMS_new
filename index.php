@@ -659,7 +659,7 @@ $pdo = null;
               </div>
               <div class="ms-md-auto py-2 py-md-0">
                 <a href="#" class="btn btn-label-info btn-round me-2">Manage</a>
-                <a href="#" class="btn btn-primary btn-round">Add Customer</a>
+                <a href="forms/addparty.php" class="btn btn-primary btn-round">Add Customer</a>
               </div>
             </div>
             <div class="row">
@@ -1488,9 +1488,9 @@ $pdo = null;
             </div>
           </div>
         </div>
-        <div class="custom-toggle">
+        <!-- <div class="custom-toggle">
           <i class="icon-settings"></i>
-        </div>
+        </div> -->
       </div>
       <!-- End Custom template -->
     </div>

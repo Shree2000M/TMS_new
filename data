@@ -1,5 +1,5 @@
 // Database connection
-$conn = new mysqli('localhost', 'root', '', 'transportdb');
+$conn = new mysqli('localhost', 'u328877764_admin1122', 'QIl4I', 'u328877764_transportdb');
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 27, 2024 at 06:27 AM
+-- Generation Time: Dec 01, 2024 at 08:05 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -44,7 +44,16 @@ INSERT INTO `charges` (`id`, `order_id`, `charge_name`, `amount`) VALUES
 (3, 1, 'driver allows ', 25478.00),
 (4, 2, 'GST', 100.00),
 (5, 2, 'Toll', 500.00),
-(6, 2, 'Driver Bhatta', 1254.00);
+(6, 2, 'Driver Bhatta', 1254.00),
+(7, 3, 'GST', 100.00),
+(8, 3, 'Toll', 258.00),
+(9, 4, 's', 12313.00),
+(10, 5, 'a', 5.00),
+(11, 6, 'a', 5464.00),
+(12, 7, 'gts65495', 464.00),
+(13, 8, 'aaa', 11.00),
+(14, 9, 'gst', 5587.00),
+(15, 9, 'traxpp', 4445.00);
 
 -- --------------------------------------------------------
 
@@ -56,8 +65,10 @@ CREATE TABLE `items` (
   `id` int(11) NOT NULL,
   `order_id` int(11) DEFAULT NULL,
   `item_name` varchar(255) DEFAULT NULL,
+  `parceltype` varchar(255) NOT NULL,
   `quantity` int(11) DEFAULT NULL,
   `weight` decimal(10,2) DEFAULT NULL,
+  `itemtax` varchar(255) NOT NULL,
   `rate` decimal(10,2) DEFAULT NULL,
   `amount` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -66,11 +77,21 @@ CREATE TABLE `items` (
 -- Dumping data for table `items`
 --
 
-INSERT INTO `items` (`id`, `order_id`, `item_name`, `quantity`, `weight`, `rate`, `amount`) VALUES
-(1, 1, 'pant', 100, 100.00, 1254.00, 125400.00),
-(2, 1, 'shirts ', 1254, 558.00, 5525.00, 6928350.00),
-(3, 2, 'Wheels ', 500, 200.00, 28.00, 14000.00),
-(4, 2, 'Tyres', 1024, 52.00, 22.00, 22528.00);
+INSERT INTO `items` (`id`, `order_id`, `item_name`, `parceltype`, `quantity`, `weight`, `itemtax`, `rate`, `amount`) VALUES
+(1, 1, 'pant', '', 100, 100.00, '', 1254.00, 125400.00),
+(2, 1, 'shirts ', '', 1254, 558.00, '', 5525.00, 6928350.00),
+(3, 2, 'Wheels ', '', 500, 200.00, '', 28.00, 14000.00),
+(4, 2, 'Tyres', '', 1024, 52.00, '', 22.00, 22528.00),
+(5, 3, 'Laptops', '', 100, 250.00, '', 400.00, 40000.00),
+(6, 3, 'printers', '', 50, 287.00, '', 254.00, 12700.00),
+(7, 4, 'a', '', 1, 1.00, '', 1.00, 1.00),
+(8, 4, 'a', '', 1, 1.00, '', 1.00, 1.00),
+(9, 5, 'a', '', 5, 58.00, '', 5.00, 25.00),
+(10, 6, 'a1', '', 1313, 131.00, '', 1.00, 1313.00),
+(11, 7, 's', '', 2, 2.00, '', 2.00, 4.00),
+(12, 7, 'test', '', 12313, 131.00, '', 313.00, 3853969.00),
+(13, 8, 'lapto', 'Basta', 454, 454.00, '', 45.00, 20430.00),
+(14, 9, 'sockets wire', 'Bag', 15254, 1154.00, '5% GST', 121.00, 1845734.00);
 
 -- --------------------------------------------------------
 
@@ -103,7 +124,14 @@ CREATE TABLE `orders` (
 
 INSERT INTO `orders` (`id`, `Status`, `order_name`, `customer_name`, `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName`) VALUES
 (1, 'Paid', '2', '3', '2024-11-07', 'kon gaon', 'panvel', 'Air', 'Consignor', 'Consignor', 'back yard goodds near applolo tyres panvel', 'middle class society panvel', '2', ' 125478', 2220, 'Mayur shisave'),
-(2, 'Paid', '1', '3', '2024-11-26', 'Adai', 'Panvel', '', 'Consignor', 'Consignor', 'Land mark society near adai New panvel bridge, New panvel ,Raigad 410206', 'Yogendra ho op housing society panvel , raigad 410206', '2', ' 125478', 0, 'Somnath padekar');
+(2, 'Paid', '1', '3', '2024-11-26', 'Adai', 'Panvel', '', 'Consignor', 'Consignor', 'Land mark society near adai New panvel bridge, New panvel ,Raigad 410206', 'Yogendra ho op housing society panvel , raigad 410206', '2', ' 125478', 0, 'Somnath padekar'),
+(3, 'Delivered', '4', '1', '2024-11-30', 'panvel', 'mumbai', 'Road', 'Consignee', 'Consignee', 'middle class society panvel raigad india 410206', 'bandra west mumbai india 410206', 'Road', ' 10000', 1, 'nitesh shah'),
+(4, 'Initiated', '1', '3', '2024-12-14', 'PANVEL', 'aa', 'Road', 'Consignor', 'Consignor', 'at ant', '4646464', 'Road', ' 777', 2, '777'),
+(5, 'Initiated', '2', '1', '2024-12-13', 'a', 'a', 'Road', 'Consignor', 'Consignee', 'a', 'a', 'Sea', ' a', 3, 'a'),
+(6, 'Initiated', '2', '1', '2024-12-13', 'a', 'a', 'Road', 'Consignor', 'Consignee', 'a', 'a', 'Sea', ' a', 3, 'a'),
+(7, 'Paid', '2', '1', '2024-12-04', 't', 'aa', 'Road', 'Consignor', 'Consignor', 's', 's', 'Air', ' s', 3, 's'),
+(8, 'Delivered', '2', '4', '2024-12-12', 'a', 'a', 'Air', 'Consignor', 'Consignor', 'a', 'a', 'Air', ' a', 1, 'a'),
+(9, 'Initiated', '3', '4', '2024-12-02', 'panvel', 'pune', 'Road', 'Consignee', 'Consignee', 'test address', 'test address', 'Sea', ' 12131545', 2, 'mayur dabhade');
 
 -- --------------------------------------------------------
 
@@ -130,7 +158,10 @@ CREATE TABLE `parties` (
 INSERT INTO `parties` (`id`, `name`, `gst`, `uh`, `contact`, `address`, `email`, `phone`, `created_at`) VALUES
 (1, 'Sahil transport PVT LTD', '1125478955', '11233654', '8104678066', 'at kon post ajivali tel panvel', 'shritejmhatre.scipl@gmail.com', '09819740287', '2024-11-21 17:19:07'),
 (2, 'shreeyash mhatre aa', '111111111111111111111', 'test', '9819740287', 'at kon post ajivali near to applolo tyres new panvel', 'Shreeyash@gmail.com', NULL, '2024-11-24 05:47:30'),
-(3, 'Shritej mhatre', '1122554778963', 'a', '9833123247', 'middle class society type a building plot 10 panvel raigad 410206', 'a@gmail.com', NULL, '2024-11-24 07:10:48');
+(3, 'Shritej mhatre', '1122554778963', 'a', '9833123247', 'middle class society type a building plot 10 panvel raigad 410206', 'a@gmail.com', NULL, '2024-11-24 07:10:48'),
+(4, 'yash dubey test 123', '1234567897464646', 'yes', '9819740287', 'at panvel dist raigad india', 'yashdubey@gmail.com', NULL, '2024-11-30 15:42:46'),
+(5, 'test nidhi shritej', '2255889966', '8855669', '8104678066', 'abcded', 'test@gmail.com', NULL, '2024-12-01 14:15:36'),
+(6, 'test partyssss', '1313', '31313', '9819740287', '13213131313', '131313@gmail.com', NULL, '2024-12-01 14:19:22');
 
 -- --------------------------------------------------------
 
@@ -160,7 +191,11 @@ INSERT INTO `payments` (`id`, `order_id`, `paying_amount`, `payment_mode`, `paym
 (11, 2, 1854.00, 'Cash', '2024-12-31', '200', '2024-11-26 18:39:43'),
 (12, 2, 1854.00, 'Cash', '2000-02-02', '200', '2024-11-26 18:40:02'),
 (13, 2, 1854.00, 'Cash', '2000-02-02', 'test', '2024-11-26 18:41:00'),
-(14, 1, 27163.00, 'Card', '2000-02-02', 'test', '2024-11-26 18:46:42');
+(14, 1, 27163.00, 'Card', '2000-02-02', 'test', '2024-11-26 18:46:42'),
+(15, 2, 2000.00, 'Cash', '2024-11-30', 'given cash in head office ', '2024-11-30 15:53:48'),
+(16, 7, 3854437.00, 'Card', '2000-02-02', 'done', '2024-11-30 21:02:41'),
+(17, 3, 5000.00, 'Cash', '2024-12-31', '121', '2024-12-01 09:09:05'),
+(18, 9, 52887.00, 'Cash', '2024-12-31', '11', '2024-12-01 14:52:31');
 
 -- --------------------------------------------------------
 
@@ -180,9 +215,11 @@ CREATE TABLE `vehicles` (
 --
 
 INSERT INTO `vehicles` (`id`, `vehicle_type`, `vehicle_no`, `capacity`) VALUES
-(1, 'Truck', 'MH55-BC4545', 125000114),
-(2, 'Pick-up', 'MH46MD7080', 22547),
-(3, 'Other', 'MH58 BC 5058', 1478932585);
+(1, 'Bus', 'MH55-BC4545test', 125000114),
+(2, 'Bus', 'MH46MD7080', 22547),
+(3, 'Pick-up', 'MH58 BC 5058test', 1478932585),
+(4, 'Pick-up', 'MH404041205', 558745),
+(5, 'Pick-up', 'MH10', 254);
 
 --
 -- Indexes for dumped tables
@@ -236,37 +273,37 @@ ALTER TABLE `vehicles`
 -- AUTO_INCREMENT for table `charges`
 --
 ALTER TABLE `charges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `parties`
 --
 ALTER TABLE `parties`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `vehicles`
 --
 ALTER TABLE `vehicles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
