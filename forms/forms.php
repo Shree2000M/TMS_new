@@ -49,7 +49,7 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
 <html lang="en">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Forms - Kaiadmin Bootstrap 5 Admin Dashboard</title>
+    <title>Forms - Centrica Admin Dashboard</title>
     <meta
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
       name="viewport"
