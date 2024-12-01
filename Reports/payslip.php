@@ -1,16 +1,18 @@
 <?php
+include '../db_connect.php';
 require_once('tcpdf/tcpdf.php');
 
-// Database Connection
-$conn = new mysqli("localhost", "root", "", "transportdb");
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+
 
 // Get `payid` from query parameters
 $payid = isset($_GET['payid']) ? intval($_GET['payid']) : 0;
 
-// Fetch payment details
+// Check if payid is valid
+if ($payid <= 0) {
+    die("Invalid payment ID.");
+}
+
+// Fetch payment details using PDO
 $sql = "
     SELECT 
         p.id AS payid, 
@@ -32,19 +34,23 @@ $sql = "
     JOIN 
         parties pt ON o.order_name = pt.id
     WHERE 
-        p.id = $payid
+        p.id = :payid
 ";
-$result = $conn->query($sql);
 
-if ($result->num_rows == 0) {
-    die("No payment found for the given ID.");
-}
+// Prepare and execute the query
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(':payid', $payid, PDO::PARAM_INT);
+$stmt->execute();
 
-// Fetch data
-$row = $result->fetch_assoc();
+
+
+
+
+// Fetch data in PDO
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Close database connection
-$conn->close();
+$pdo = null; 
 
 // Create PDF instance
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);

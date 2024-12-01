@@ -1,4 +1,5 @@
 <?php
+include '../db_connect.php';
 require_once('tcpdf/tcpdf.php'); 
 
 class CustomPDF extends TCPDF {
@@ -49,25 +50,36 @@ class CustomPDF extends TCPDF {
     }
 }
 
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "transportdb";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 // Get order details
 $orderId = $_GET['orderId'];
-$orderResult = $conn->query("SELECT o.id , `Status`, p.name as CONSIGNOR ,p.address as CONSIGNORADDRESS,P.contact AS ConsignorContact,p.email as ConsignorEmail, p2.name as ConsigneeName,p2.address as consigneeaddress , p2.contact as consigneecontact,p2.email as consigneeemail, `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName` FROM `orders` o join parties p on o.order_name=p.id join parties p2 on o.customer_name=p2.id where  o.id = $orderId");
-$order = $orderResult->fetch_assoc();
 
-$itemResult = $conn->query("SELECT * FROM items WHERE order_id = $orderId");
-$chargeResult = $conn->query("SELECT * FROM charges WHERE order_id = $orderId");
+try {
+    // Prepare and execute query to fetch order details
+    $stmt = $conn->prepare("SELECT o.id, `Status`, p.name as CONSIGNOR, p.address as CONSIGNORADDRESS, P.contact AS ConsignorContact, p.email as ConsignorEmail, p2.name as ConsigneeName, p2.address as consigneeaddress, p2.contact as consigneecontact, p2.email as consigneeemail, `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName`
+                           FROM `orders` o
+                           JOIN parties p ON o.order_name = p.id
+                           JOIN parties p2 ON o.customer_name = p2.id
+                           WHERE o.id = :orderId");
+    $stmt->bindParam(':orderId', $orderId, PDO::PARAM_INT);
+    $stmt->execute();
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Prepare and execute query to fetch items
+    $itemStmt = $conn->prepare("SELECT * FROM items WHERE order_id = :orderId");
+    $itemStmt->bindParam(':orderId', $orderId, PDO::PARAM_INT);
+    $itemStmt->execute();
+    $items = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Prepare and execute query to fetch charges
+    $chargeStmt = $conn->prepare("SELECT * FROM charges WHERE order_id = :orderId");
+    $chargeStmt->bindParam(':orderId', $orderId, PDO::PARAM_INT);
+    $chargeStmt->execute();
+    $charges = $chargeStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
 // Create PDF
 $pdf = new CustomPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 $pdf->SetCreator(PDF_CREATOR);
@@ -139,15 +151,26 @@ $pdf->Cell(25, 6, 'Rate', 1, 0, 'C');
 $pdf->Cell(30, 6, 'Total Amount', 1, 1, 'C');
 
 $itemTotal = 0;
-$itemResult->data_seek(0);
-while ($item = $itemResult->fetch_assoc()) {
+
+// Fetch items for the order using PDO
+$stmt = $conn->prepare("SELECT * FROM items WHERE order_id = :orderId");
+$stmt->bindParam(':orderId', $orderId, PDO::PARAM_INT);
+$stmt->execute();
+$items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($items as $item) {
+    // Set PDF font and cell formatting
     $pdf->SetFont('helvetica', '', 8);
+    
+    // Add item details to the PDF
     $pdf->Cell(40, 6, $item['item_name'], 1, 0, 'L');
     $pdf->Cell(20, 6, 'Bag', 1, 0, 'C');
     $pdf->Cell(20, 6, $item['quantity'], 1, 0, 'C');
     $pdf->Cell(25, 6, $item['weight'] . ' kg', 1, 0, 'C');
-    $pdf->Cell(25, 6,  number_format($item['rate'], 2), 1, 0, 'R');
-    $pdf->Cell(30, 6,  number_format($item['amount'], 2), 1, 1, 'R');
+    $pdf->Cell(25, 6, number_format($item['rate'], 2), 1, 0, 'R');
+    $pdf->Cell(30, 6, number_format($item['amount'], 2), 1, 1, 'R');
+    
+    // Accumulate the total amount
     $itemTotal += $item['amount'];
 }
 
@@ -159,14 +182,24 @@ $pdf->Cell(100, 6, 'Charge Description', 1, 0, 'C');
 $pdf->Cell(50, 6, 'Amount', 1, 1, 'C');
 
 $chargeTotal = 0;
-$chargeResult->data_seek(0);
-while ($charge = $chargeResult->fetch_assoc()) {
+
+// Fetch charges for the order using PDO
+$stmt = $conn->prepare("SELECT * FROM charges WHERE order_id = :orderId");
+$stmt->bindParam(':orderId', $orderId, PDO::PARAM_INT);
+$stmt->execute();
+$charges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($charges as $charge) {
+    // Set PDF font and cell formatting
     $pdf->SetFont('helvetica', '', 8);
+    
+    // Add charge details to the PDF
     $pdf->Cell(100, 6, $charge['charge_name'], 1, 0, 'L');
-    $pdf->Cell(50, 6,  number_format($charge['amount'], 2), 1, 1, 'R');
+    $pdf->Cell(50, 6, number_format($charge['amount'], 2), 1, 1, 'R');
+    
+    // Accumulate the total charge amount
     $chargeTotal += $charge['amount'];
 }
-
 // Financial Summary
 $pdf->Ln(5);
 $pdf->SectionHeader('FINANCIAL SUMMARY');

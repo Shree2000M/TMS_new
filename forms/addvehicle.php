@@ -1,11 +1,5 @@
 <?php
-// Database connection
-$conn = new mysqli('localhost', 'root', '', 'transportdb');
-
-// Check if the connection is successful
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db_connect.php';
 
 // Handle form submission to insert or update data in the database
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -18,16 +12,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $capacity = $_POST['capacity'];
 
         // SQL query to update the record
-        $stmt = $conn->prepare("UPDATE vehicles SET vehicle_type = ?, vehicle_no = ?, capacity = ? WHERE id = ?");
-        $stmt->bind_param("ssii", $vehicle_type, $vehicle_no, $capacity, $edit_id);
+        $stmt = $conn->prepare("UPDATE vehicles SET vehicle_type = :vehicle_type, vehicle_no = :vehicle_no, capacity = :capacity WHERE id = :edit_id");
 
-        if ($stmt->execute()) {
-            $message = "Vehicle details updated successfully!";
-        } else {
-            $message = "Error: " . $stmt->error;
-        }
-
-        $stmt->close();
+        // Bind the values to named placeholders
+        $stmt->bindValue(':vehicle_type', $vehicle_type, PDO::PARAM_STR);
+        $stmt->bindValue(':vehicle_no', $vehicle_no, PDO::PARAM_STR);
+        $stmt->bindValue(':capacity', $capacity, PDO::PARAM_INT);
+        $stmt->bindValue(':edit_id', $edit_id, PDO::PARAM_INT);
+        
+        // Execute the statement
+        $stmt->execute();
+        $pdo = null; 
     } else {
         // Insert new record
         $vehicle_type = $_POST['vehicle_type'];
@@ -39,8 +34,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $message = "All fields are required!";
         } else {
             // SQL query to insert data
-            $stmt = $conn->prepare("INSERT INTO vehicles (vehicle_type, vehicle_no, capacity) VALUES (?, ?, ?)");
-            $stmt->bind_param("ssi", $vehicle_type, $vehicle_no, $capacity);
+            $stmt = $conn->prepare("INSERT INTO vehicles (vehicle_type, vehicle_no, capacity) VALUES (:vehicle_type, :vehicle_no, :capacity)");
+            $stmt->bindValue(':vehicle_type', $vehicle_type, PDO::PARAM_STR);
+            $stmt->bindValue(':vehicle_no', $vehicle_no, PDO::PARAM_STR);
+            $stmt->bindValue(':capacity', $capacity, PDO::PARAM_INT);
+            
 
             if ($stmt->execute()) {
                 $message = "Vehicle details inserted successfully!";
@@ -48,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $message = "Error: " . $stmt->error;
             }
 
-            $stmt->close();
+            $pdo = null;
         }
     }
 }
@@ -58,17 +56,28 @@ $result = $conn->query("SELECT * FROM vehicles ORDER BY id DESC");
 
 // Fetch the vehicle details if we're editing
 $edit_data = null;
+
 if (isset($_GET['edit'])) {
     $edit_id = $_GET['edit'];
-    $edit_query = $conn->prepare("SELECT * FROM vehicles WHERE id = ?");
-    $edit_query->bind_param("i", $edit_id);
-    $edit_query->execute();
-    $edit_result = $edit_query->get_result();
-    $edit_data = $edit_result->fetch_assoc();
-    $edit_query->close();
+    
+    try {
+        // Prepare the query
+        $edit_query = $conn->prepare("SELECT * FROM vehicles WHERE id = :edit_id");
+        
+        // Bind the value
+        $edit_query->bindValue(':edit_id', $edit_id, PDO::PARAM_INT);
+        
+        // Execute the query
+        $edit_query->execute();
+        
+        // Fetch the data
+        $edit_data = $edit_query->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
 }
 
-$conn->close();
+$pdo = null; 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -754,7 +763,16 @@ $conn->close();
 
     <h3>Inserted Vehicle Details</h3>
 
-    <?php if ($result->num_rows > 0): ?>
+   <?php
+try {
+    // Query to fetch all vehicles
+    $stmt = $conn->query("SELECT * FROM vehicles ORDER BY id DESC");
+
+    // Fetch all rows as an associative array
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Check if rows exist
+    if (count($rows) > 0): ?>
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -765,22 +783,27 @@ $conn->close();
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = $result->fetch_assoc()): ?>
+                <?php foreach ($rows as $row): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['vehicle_type']); ?></td>
                         <td><?php echo htmlspecialchars($row['vehicle_no']); ?></td>
                         <td><?php echo htmlspecialchars($row['capacity']); ?></td>
                         <td>
                             <!-- Edit button for each record -->
-                            <a href="addvehicle.php?edit=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="addvehicle.php?edit=<?php echo htmlspecialchars($row['id']); ?>" class="btn btn-warning btn-sm">Edit</a>
                         </td>
                     </tr>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
     <?php else: ?>
         <p>No vehicles added yet.</p>
-    <?php endif; ?>
+    <?php endif;
+} catch (PDOException $e) {
+    // Handle query errors
+    echo "Error: " . $e->getMessage();
+}
+?>
 </div>
                   </div>
                 </div>

@@ -1,9 +1,6 @@
 <?php
 // Database connection
-$conn = new mysqli('localhost', 'root', '', 'transportdb');
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include 'db_connect.php';
 
 // Fetch dashboard counts
 $totalOrders = 0;
@@ -13,24 +10,24 @@ $pendingOrders = 0;
 
 // Query for Total Orders and Total Amount
 $result = $conn->query("SELECT COUNT(*) AS total_orders FROM orders");
-if ($row = $result->fetch_assoc()) {
+if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     $totalOrders = $row['total_orders'];
     $totalAmount = $row['total_amount'] ?? 0; // Ensure total_amount isn't NULL
 }
 
 // Query for Paid Orders
 $result = $conn->query("SELECT COUNT(*) AS paid_orders FROM orders WHERE status = 'Paid'");
-if ($row = $result->fetch_assoc()) {
+if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     $paidOrders = $row['paid_orders'];
 }
 
 // Query for Pending Orders
 $result = $conn->query("SELECT COUNT(*) AS pending_orders FROM orders WHERE status = 'Pending'");
-if ($row = $result->fetch_assoc()) {
+if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     $pendingOrders = $row['pending_orders'];
 }
 
-$conn->close();
+$pdo = null; 
 ?>
 
 <!DOCTYPE html>

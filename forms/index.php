@@ -1,8 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "transportdb";
+include 'db_connect.php';
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

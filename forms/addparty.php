@@ -1,9 +1,5 @@
 <?php
-// Database connection
-$conn = new mysqli('localhost', 'root', '', 'transportdb');
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+include '../db_connect.php';
 
 $editing = false;
 $party = [
@@ -27,36 +23,73 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $uh = $_POST['uh'];
 
     if (!empty($id)) {
-        // Update existing party
-        $stmt = $conn->prepare("UPDATE parties SET name = ?, contact = ?, address = ?, gst = ?, email = ?, uh = ? WHERE id = ?");
-        $stmt->bind_param("ssssssi", $name, $contact, $address, $gst, $email, $uh, $id);
-    } else {
-        // Add new party
-        $stmt = $conn->prepare("INSERT INTO parties (name, contact, address, gst, email, uh) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $name, $contact, $address, $gst, $email, $uh);
-    }
-
-    if ($stmt->execute()) {
-        header("Location: addparty.php?success=1");
-        exit();
-    } else {
-        echo "Error: " . $stmt->error;
-    }
-
-    $stmt->close();
+      // Update existing party
+      try {
+          $stmt = $conn->prepare("UPDATE parties SET name = :name, contact = :contact, address = :address, gst = :gst, email = :email, uh = :uh WHERE id = :id");
+          $stmt->bindValue(':name', $name, PDO::PARAM_STR);
+          $stmt->bindValue(':contact', $contact, PDO::PARAM_STR);
+          $stmt->bindValue(':address', $address, PDO::PARAM_STR);
+          $stmt->bindValue(':gst', $gst, PDO::PARAM_STR);
+          $stmt->bindValue(':email', $email, PDO::PARAM_STR);
+          $stmt->bindValue(':uh', $uh, PDO::PARAM_STR);
+          $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+      } catch (PDOException $e) {
+          echo "Error: " . $e->getMessage();
+          exit();
+      }
+  } else {
+      // Add new party
+      try {
+          $stmt = $conn->prepare("INSERT INTO parties (name, contact, address, gst, email, uh) VALUES (:name, :contact, :address, :gst, :email, :uh)");
+          $stmt->bindValue(':name', $name, PDO::PARAM_STR);
+          $stmt->bindValue(':contact', $contact, PDO::PARAM_STR);
+          $stmt->bindValue(':address', $address, PDO::PARAM_STR);
+          $stmt->bindValue(':gst', $gst, PDO::PARAM_STR);
+          $stmt->bindValue(':email', $email, PDO::PARAM_STR);
+          $stmt->bindValue(':uh', $uh, PDO::PARAM_STR);
+      } catch (PDOException $e) {
+          echo "Error: " . $e->getMessage();
+          exit();
+      }
+  }
+  
+  if ($stmt->execute()) {
+      header("Location: addparty.php?success=1");
+      exit();
+  } else {
+      echo "Error: " . $stmt->errorInfo()[2];  // Fetch detailed error message from PDO
+  }
+  
 }
 
 // Check if we are editing an existing party
 if (isset($_GET['edit_id'])) {
-    $id = $_GET['edit_id'];
-    $stmt = $conn->prepare("SELECT * FROM parties WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $party = $result->fetch_assoc();
-    $editing = true;
-    $stmt->close();
+  $id = $_GET['edit_id'];
+  try {
+      // Prepare the SQL statement
+      $stmt = $conn->prepare("SELECT * FROM parties WHERE id = :id");
+
+      // Bind the parameter
+      $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+      // Execute the statement
+      $stmt->execute();
+
+      // Fetch the result as an associative array
+      $party = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      // Check if a record is found
+      if ($party) {
+          $editing = true;
+      } else {
+          echo "No party found with ID: " . htmlspecialchars($id);
+      }
+  } catch (PDOException $e) {
+      // Handle database errors
+      echo "Error: " . $e->getMessage();
+  }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -756,9 +789,14 @@ if (isset($_GET['edit_id'])) {
         </thead>
         <tbody>
             <?php
-            $result = $conn->query("SELECT * FROM parties ORDER BY id DESC");
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
+           try {
+            // Query to fetch all parties
+            $stmt = $conn->query("SELECT * FROM parties ORDER BY id DESC");
+        
+            // Check if there are rows
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all rows as associative arrays
+            if (count($rows) > 0) {
+                foreach ($rows as $row) {
                     echo "<tr>";
                     echo "<td>" . htmlspecialchars($row['id']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['name']) . "</td>";
@@ -773,10 +811,17 @@ if (isset($_GET['edit_id'])) {
                     echo "</tr>";
                 }
             } else {
+                // No rows found
                 echo "<tr><td colspan='8' class='text-center'>No parties added yet.</td></tr>";
             }
-            $conn->close();
-            ?>
+        } catch (PDOException $e) {
+            // Handle query errors
+            echo "Error: " . $e->getMessage();
+        }
+        
+        // Close the connection explicitly (optional)
+        $pdo = null;
+        ?>
         </tbody>
     </table>
 </div>

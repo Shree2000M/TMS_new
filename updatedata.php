@@ -1,8 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "transportdb";
+include 'db_connect.php';
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -14,7 +11,7 @@ $orderId = $_GET['id'];
 
 // Fetch the order details
 $orderResult = $conn->query("SELECT * FROM orders WHERE id = $orderId");
-$order = $orderResult->fetch_assoc();
+$order = $orderResult->fetch(PDO::FETCH_ASSOC)
 
 // Handle form submission for updating order details
 if (isset($_POST['update_order'])) {

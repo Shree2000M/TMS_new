@@ -664,20 +664,41 @@ try {
                   </div>
                   <div class="card-body">
                   <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "transportdb";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Get orderId from URL
+$orderId = isset($_GET['id']) ? $_GET['id'] : 0;
+
+// Prepare and execute the query
+$sql = "SELECT o.id, `Status`, p.name as CONSIGNOR, p.address as CONSIGNORADDRESS, p.contact AS ConsignorContact, p.email as ConsignorEmail, 
+        p2.name as ConsigneeName, p2.address as consigneeaddress, p2.contact as consigneecontact, p2.email as consigneeemail, 
+        `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, 
+        `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName`
+        FROM `orders` o
+        JOIN parties p ON o.order_name = p.id
+        JOIN parties p2 ON o.customer_name = p2.id
+        WHERE o.id = :orderId";
+
+// Prepare the statement
+$stmt = $conn->prepare($sql);
+
+// Bind the parameter
+$stmt->bindParam(':orderId', $orderId, PDO::PARAM_INT);
+
+// Execute the query
+$stmt->execute();
+
+// Fetch the result
+$order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Check if any data was fetched
+if ($order) {
+    // Process the order data
+} else {
+    // Handle no order found
+    echo "No order found for the given ID.";
 }
 
-$orderId = $_GET['id'];
-$orderResult = $conn->query("SELECT o.id , `Status`, p.name as CONSIGNOR ,p.address as CONSIGNORADDRESS,P.contact AS ConsignorContact,p.email as ConsignorEmail, p2.name as ConsigneeName,p2.address as consigneeaddress , p2.contact as consigneecontact,p2.email as consigneeemail, `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName` FROM `orders` o join parties p on o.order_name=p.id join parties p2 on o.customer_name=p2.id where  o.id = $orderId");
-$order = $orderResult->fetch_assoc();
 
 $payments_query = "SELECT * FROM payments WHERE order_id = $orderId";
 $payments_result = $conn->query($payments_query);
@@ -686,7 +707,7 @@ $paymentstotal_query = "SELECT sum(paying_amount) as totalamt FROM payments WHER
 $payments_result_total = $conn->query($paymentstotal_query);
 
 $sumpayment = 0;
-while ($sumofpay = $payments_result_total->fetch_assoc()) {
+while ($sumofpay = $payments_result_total->fetch(PDO::FETCH_ASSOC)) {
   $sumpayment= $sumofpay['totalamt']; // Sum up charge amounts
 }
 
@@ -702,12 +723,12 @@ $chargeResult = $conn->query("SELECT * FROM charges WHERE order_id = $orderId");
 
 // Calculate subtotals
 $itemTotal = 0;
-while ($item = $itemResult->fetch_assoc()) {
+while ($item = $itemResult->fetch(PDO::FETCH_ASSOC)) {
     $itemTotal += $item['amount']; // Sum up item amounts
 }
 
 $chargeTotal = 0;
-while ($charge = $chargeResult->fetch_assoc()) {
+while ($charge = $chargeResult->fetch(PDO::FETCH_ASSOC)) {
     $chargeTotal += $charge['amount']; // Sum up charge amounts
 }
 
@@ -795,7 +816,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tbody>
                     <?php
                     $itemResult = $conn->query("SELECT * FROM items WHERE order_id = $orderId");
-                    while ($item = $itemResult->fetch_assoc()) {
+                    while ($item = $itemResult->fetch(PDO::FETCH_ASSOC)) {
                         echo "<tr>";
                         echo "<td>{$item['item_name']}</td>";
                         echo "<td>{$item['quantity']}</td>";
@@ -823,7 +844,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tbody>
                     <?php
                     $chargeResult = $conn->query("SELECT * FROM charges WHERE order_id = $orderId");
-                    while ($charge = $chargeResult->fetch_assoc()) {
+                    while ($charge = $chargeResult->fetch(PDO::FETCH_ASSOC)) {
                         echo "<tr>";
                         echo "<td>{$charge['charge_name']}</td>";
                         echo "<td>{$charge['amount']}</td>";
