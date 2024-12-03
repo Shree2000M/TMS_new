@@ -1,48 +1,16 @@
 
 <?php
+include '../db_connect.php';
 // Display all errors
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Database connection
-$conn = new mysqli('localhost', 'root', '', 'transportdb');
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
-$partyDetails1 = null;
-$partyDetails2 = null;
-
-// If form is submitted, fetch the selected party details for both selects
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    if (isset($_POST['party_id1'])) {
-        $party_id1 = $_POST['party_id1'];
-        $stmt1 = $conn->prepare("SELECT * FROM parties WHERE id = ?");
-        $stmt1->bind_param("i", $party_id1);
-        $stmt1->execute();
-        $result1 = $stmt1->get_result();
-        if ($result1->num_rows > 0) {
-            $partyDetails1 = $result1->fetch_assoc();
-        }
-        $stmt1->close();
-    }
-
-    if (isset($_POST['party_id2'])) {
-        $party_id2 = $_POST['party_id2'];
-        $stmt2 = $conn->prepare("SELECT * FROM parties WHERE id = ?");
-        $stmt2->bind_param("i", $party_id2);
-        $stmt2->execute();
-        $result2 = $stmt2->get_result();
-        if ($result2->num_rows > 0) {
-            $partyDetails2 = $result2->fetch_assoc();
-        }
-        $stmt2->close();
-    }
-}
-
-// Fetch all parties for both dropdowns
-$result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
+$query = "SELECT id, name FROM parties ORDER BY name ASC";
+$stmt = $conn->prepare($query);
+$stmt->execute();
+$parties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -701,36 +669,25 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
                                   <div class="col-md-6 mb-3">
                                     <label for="transportMode" class="form-label">Consignor / Sender</label>
                                     <select class="form-select form-control" name="consignor" id="consignor" required>
-                                    <option value="" disabled selected>Select a party</option>
-                                            <?php
-                                              if ($result->num_rows > 0) {
-                                                 while ($row = $result->fetch_assoc()) {
-                                                                   echo "<option value='" . htmlspecialchars($row['id']) . "'>" . htmlspecialchars($row['name']) . "</option>";
-                                                                  }
-                                                                  } else {
-                                                                  echo "<option value='' disabled>No parties available</option>";
-                                                         }
-                                                            ?>
-                                    </select>
+                    <option value="" disabled selected>Select a Consignorty</option>
+                    <?php foreach ($parties as $party): ?>
+                        <option value="<?php echo htmlspecialchars($party['id']); ?>">
+                            <?php echo htmlspecialchars($party['name']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
                                 </div>
 
                                   <div class="col-md-6 mb-3">
                                       <label for="consignee" class="form-label">Consignee / Receiver</label>
                                       <select class="form-select form-control" name="consignee" id="consignee" required>
-                                    <option value="" disabled selected>Select consignee's name</option>
-                                           
-                <?php
-                // Reset the result pointer to reuse the same query result for the second dropdown
-                $result->data_seek(0); 
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<option value='" . htmlspecialchars($row['id']) . "'>" . htmlspecialchars($row['name']) . "</option>";
-                    }
-                } else {
-                    echo "<option value='' disabled>No parties available</option>";
-                }
-                ?>
-                                    </select>
+                    <option value="" disabled selected>Select a Consignee</option>
+                    <?php foreach ($parties as $party): ?>
+                        <option value="<?php echo htmlspecialchars($party['id']); ?>">
+                            <?php echo htmlspecialchars($party['name']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
                                   </div>
                                   
                               </div>
@@ -817,47 +774,38 @@ $result = $conn->query("SELECT id, name FROM parties ORDER BY name ASC");
                       <div class="col-md-6">
                           <div class="section-card text-bg-light p-3">
                               <h5 class="section-heading">Vehicle Details</h5>
-                              <div class="row">
+                            
+<div class="row">
+                              
                                   
-                                  <div class="col-md-6 mb-3">
-                                      <label for="transportMode" class="form-label">Vehicle Type</label>
-                                      <select class="form-select form-control" name="vehicletype" id="vehicletype" required>
-                                          <option value="">Select Vehicle</option>
-                                          <option value="Road">Truck</option>
-                                          <option value="Air">Bus</option>
-                                          <option value="Sea">Pick-Up</option>
-                                          <option value="Rail">Other</option>
-                                      </select>
-
-                                      
-
-                                  </div>
-                                  
-                              </div>
-                              <div class="row">
-                                  <div class="col-md-6 mb-3">
-                                      <label for="consignor" class="form-label">Vehicle Capecity</label>
-                                      <input type="text" class="form-control" id="Vehiclecapacity" name="Vehiclecapacity" placeholder="Enter Vehicl's Capecity" required>
-                                  </div>
                                   <div class="col-md-6 mb-3">
                                       <!-- <label for="consignee" class="form-label">Vehicle No.</label>
                                       <input type="text" class="form-control" name="Vehicleno" id="Vehicleno" placeholder="Enter Vehicle No" required> -->
 
                                       <label for="vehicle">Select Vehicle</label>
-            <select name="Vehicleno" id="Vehicleno" class="form-control" required>
-                <option value="" disabled selected>Select Vehicle</option>
-                
-                <?php
-                // Fetch vehicles for the dropdown
-$vehicles_query = $conn->query("SELECT id, vehicle_type, vehicle_no FROM vehicles ORDER BY vehicle_type ASC");
+                                      <select name="Vehicleno" id="Vehicleno" class="form-control" required>
+                                      <option value="" disabled selected>Select Vehicle</option>
+                                      <?php
+                                      // Query to fetch vehicles
+                                      $querytogetvehicle = "SELECT id, vehicle_type, vehicle_no, capacity FROM vehicles ORDER BY vehicle_type ASC";
+                                      $stmt = $conn->prepare($querytogetvehicle);
+                                      $stmt->execute();
+                                      $vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all rows as an array
 
-                while ($vehicle = $vehicles_query->fetch_assoc()): ?>
-                    <option value="<?php echo $vehicle['id']; ?>"><?php echo htmlspecialchars($vehicle['vehicle_type']) . ' - ' . htmlspecialchars($vehicle['vehicle_no']); ?></option>
-                <?php endwhile; ?>
-            </select>
+                                      // Iterate through the vehicles and populate the dropdown
+                                      foreach ($vehicles as $vehicle): ?>
+                                          <option value="<?php echo htmlspecialchars($vehicle['id']); ?>">
+                                              <?php echo htmlspecialchars($vehicle['vehicle_no']); ?>
+                                          </option>
+                                      <?php endforeach; ?>
+                                      </select>
+
                                   </div>
+
+                                  
                               </div>
                               <div class="mb-3">
+                                
                                   <label for="deliveryAddress" class="form-label">Driver Name</label>
                                   <textarea class="form-control" name="DriverName" id="DriverName" rows="2" placeholder="Enter Driver Name" required></textarea>
                               </div>
@@ -1369,8 +1317,8 @@ let itemList = [];
           const pickupAddress = document.getElementById('pickupAddress').value;
           const deliveryAddress = document.getElementById('deliveryAddress').value;
           
-          const vehicletype = document.getElementById('vehicletype').value;
-          const Vehiclecapacity = document.getElementById('Vehiclecapacity').value;
+         
+         
           const Vehicleno = document.getElementById('Vehicleno').value;
           const DriverName = document.getElementById('DriverName').value;
   
@@ -1395,8 +1343,6 @@ let itemList = [];
               taxPaidBy,
               pickupAddress,
               deliveryAddress,
-              vehicletype,
-              Vehiclecapacity,
               Vehicleno,
               DriverName,
               items: itemList,

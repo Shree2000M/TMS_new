@@ -1,25 +1,21 @@
 <?php
-
+include '../db_connect.php';
 // Check if 'order_id' is present in the URL
-$order_id = isset($_GET['order_id']) ? $_GET['order_id'] : null;
-?>
-<?php
+$order_id = isset($_GET['order_id']) ? (int)$_GET['order_id'] : null;
 
-// Database connection
-$conn = new mysqli('localhost', 'root', '', 'transportdb');
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+// Database connection using PDO
+
 
 // Fetch payment pending orders
-$query = "SELECT 
+$query = "
+SELECT 
     o.id AS order_id,
     CASE 
         WHEN o.paidBy = 'Consignor' THEN pr.name
-       WHEN o.paidBy = 'Consignee' THEN prc.name
+        WHEN o.paidBy = 'Consignee' THEN prc.name
         ELSE null
     END AS Paidby,
-    pr.name as order_name,
+    pr.name AS order_name,
     o.customer_name,
     o.order_date,
     COALESCE(item_totals.total_items_amount, 0) AS total_items_amount,
@@ -47,16 +43,20 @@ LEFT JOIN
         GROUP BY 
             order_id
     ) AS charge_totals ON o.id = charge_totals.order_id 
-    join parties pr on pr.id=o.order_name join parties prc on o.customer_name=prc.id
+JOIN 
+    parties pr ON pr.id = o.order_name 
+JOIN 
+    parties prc ON o.customer_name = prc.id
 ";
-$result = $conn->query($query);
+
+$stmt = $conn->query($query);
+$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch order details
-$order_id = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
-$order_query = "SELECT order_id, SUM(amount) AS amount FROM charges WHERE order_id = $order_id GROUP BY order_id";
-$order_result = $conn->query($order_query);
-$order = $order_result->fetch_assoc();
-
+$order_query = "SELECT order_id, SUM(amount) AS amount FROM charges WHERE order_id = :order_id GROUP BY order_id";
+$stmt_order = $conn->prepare($order_query);
+$stmt_order->execute([':order_id' => $order_id]);
+$order = $stmt_order->fetch(PDO::FETCH_ASSOC);
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -66,16 +66,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $remark = $_POST['remark'];
 
     // Insert payment record
-    $payment_insert = $conn->prepare("INSERT INTO payments (order_id, paying_amount, payment_mode, payment_date, remark) VALUES (?, ?, ?, ?, ?)");
-    $payment_insert->bind_param('idsss', $order_id, $paying_amount, $payment_mode, $payment_date, $remark);
-   
-    if ($payment_insert->execute()) {
+    $payment_insert = $conn->prepare("INSERT INTO payments (order_id, paying_amount, payment_mode, payment_date, remark) 
+                                      VALUES (:order_id, :paying_amount, :payment_mode, :payment_date, :remark)");
+    $payment_insert_success = $payment_insert->execute([
+        ':order_id' => $order_id,
+        ':paying_amount' => $paying_amount,
+        ':payment_mode' => $payment_mode,
+        ':payment_date' => $payment_date,
+        ':remark' => $remark,
+    ]);
+
+    if ($payment_insert_success) {
         // Update order payment status if fully paid
         $remaining_amount = $order['amount'] - $paying_amount;
-      
+
         if ($remaining_amount <= 0) {
-            $update_status = "UPDATE orders SET status = 'Paid' WHERE id = $order_id";
-            $conn->query($update_status);
+            $update_status = $conn->prepare("UPDATE orders SET status = 'Paid' WHERE id = :order_id");
+            $update_status->execute([':order_id' => $order_id]);
         }
         echo "<div class='alert alert-success'>Payment recorded successfully.</div>";
     } else {
@@ -84,9 +91,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 // Fetch payments for the order
-$payments_query = "SELECT * FROM payments WHERE order_id = $order_id";
-$payments_result = $conn->query($payments_query);
+$payments_query = "SELECT * FROM payments WHERE order_id = :order_id";
+$stmt_payments = $conn->prepare($payments_query);
+$stmt_payments->execute([':order_id' => $order_id]);
+$payments_result = $stmt_payments->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -696,7 +706,9 @@ $payments_result = $conn->query($payments_query);
         <div class="container">
           <div class="page-inner">
             
-          <div class="container mt-5" style="<?php echo $order_id ? 'display: none;' : ''; ?>">
+          <?php $isHidden = $order_id ? 'display: none;' : ''; ?>
+<div class="container mt-5" style="<?php echo $isHidden; ?>">
+
         <h2 class="text-center">Payment Pending Orders</h2>
         <div class="table-responsive mt-4">
             <table class="table table-bordered table-striped">
@@ -712,36 +724,39 @@ $payments_result = $conn->query($payments_query);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if ($result->num_rows > 0): ?>
-                        <?php while ($row = $result->fetch_assoc()): ?>
-                            <tr>
-                                <td><?php echo $row['order_id']; ?></td>
-                                <td><?php echo $row['Paidby']; ?></td>
-                                <td><?php echo $row['order_date']; ?></td>
-                                <td><?php echo number_format($row['total_items_amount'], 2); ?></td>
-                                <td><?php echo number_format($row['total_charges'], 2); ?></td>
-                                <td><?php echo number_format($row['grand_total'], 2); ?></td>
-                                <td>
-                                    <a href="paymentpending.php?order_id=<?php echo $row['order_id']; ?>" 
-                                       class="btn btn-primary btn-sm">Collect payment</a>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="5" class="text-center">No pending payments found.</td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
+    <?php if (!empty($result)): ?>
+        <?php foreach ($result as $row): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['order_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['Paidby']); ?></td>
+                <td><?php echo htmlspecialchars($row['order_date']); ?></td>
+                <td><?php echo number_format($row['total_items_amount'], 2); ?></td>
+                <td><?php echo number_format($row['total_charges'], 2); ?></td>
+                <td><?php echo number_format($row['grand_total'], 2); ?></td>
+                <td>
+                    <a href="paymentpending.php?order_id=<?php echo htmlspecialchars($row['order_id']); ?>" 
+                       class="btn btn-primary btn-sm">Collect payment</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr>
+            <td colspan="7" class="text-center">No pending payments found.</td>
+        </tr>
+    <?php endif; ?>
+</tbody>
+
             </table>
         </div>
     </div>
 <!-- end of div -->
 
-
-<div class="container mt-5" style="<?php echo $order_id ? '' : 'display: none;'; ?>">
-    <h2 class="text-center">Submit Payment for Order #<?php echo $order['order_id']; ?></h2>
-    <p class="text-center">Party: <?php echo $order['order_id']; ?> | Amount Pending: ₹<?php echo number_format($order['amount'], 2); ?></p>
+<div class="container mt-5" style="<?php echo isset($order_id) && $order_id ? '' : 'display: none;'; ?>">
+    <h2 class="text-center">Submit Payment for Order #<?php echo htmlspecialchars($order['order_id']); ?></h2>
+    <p class="text-center">
+        Party: <?php echo htmlspecialchars($order['order_id']); ?> | 
+        Amount Pending: ₹<?php echo number_format($order['amount'], 2); ?>
+    </p>
     <form method="POST" class="mt-4">
         <div class="mb-3">
             <label for="paying_amount" class="form-label">Paying Amount</label>
@@ -781,26 +796,27 @@ $payments_result = $conn->query($payments_query);
         </tr>
         </thead>
         <tbody>
-        <?php if ($payments_result->num_rows > 0): ?>
-            <?php while ($payment = $payments_result->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo $payment['id']; ?></td>
-                    <td>₹<?php echo number_format($payment['paying_amount'], 2); ?></td>
-                    <td><?php echo $payment['payment_mode']; ?></td>
-                    <td><?php echo $payment['payment_date']; ?></td>
-                    <td><?php echo $payment['remark']; ?></td>
-                    <td>
-                                    <a href="../Reports/payslip.php?payid=<?php echo $payment['id']; ?>" 
-                                       class="btn btn-primary btn-sm" target="_blank">Open</a>
-                                </td>
-                </tr>
-            <?php endwhile; ?>
-        <?php else: ?>
+    <?php if (!empty($payments_result)): ?>
+        <?php foreach ($payments_result as $payment): ?>
             <tr>
-                <td colspan="5" class="text-center">No payments recorded yet.</td>
+                <td><?php echo htmlspecialchars($payment['id']); ?></td>
+                <td>₹<?php echo number_format($payment['paying_amount'], 2); ?></td>
+                <td><?php echo htmlspecialchars($payment['payment_mode']); ?></td>
+                <td><?php echo htmlspecialchars($payment['payment_date']); ?></td>
+                <td><?php echo htmlspecialchars($payment['remark']); ?></td>
+                <td>
+                    <a href="../Reports/payslip.php?payid=<?php echo htmlspecialchars($payment['id']); ?>" 
+                       class="btn btn-primary btn-sm" target="_blank">Open</a>
+                </td>
             </tr>
-        <?php endif; ?>
-        </tbody>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr>
+            <td colspan="6" class="text-center">No payments recorded yet.</td>
+        </tr>
+    <?php endif; ?>
+</tbody>
+
     </table>
 </div>
 
@@ -1050,5 +1066,5 @@ $payments_result = $conn->query($payments_query);
 </html>
 <?php
 // Close connection
-$conn->close();
+$conn = null;
 ?>

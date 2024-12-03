@@ -668,7 +668,7 @@ $orderId = isset($_GET['id']) ? $_GET['id'] : 0;
 $sql = "SELECT o.id, `Status`, p.name as CONSIGNOR, p.address as CONSIGNORADDRESS, p.contact AS ConsignorContact, p.email as ConsignorEmail, 
         p2.name as ConsigneeName, p2.address as consigneeaddress, p2.contact as consigneecontact, p2.email as consigneeemail, 
         `order_date`, `fromLocation`, `toLocation`, `transportMode`, `paidBy`, `taxPaidBy`, `pickupAddress`, `deliveryAddress`, 
-        `vehicletype`, `Vehiclecapacity`, `Vehicleno`, `DriverName`
+         `Vehicleno`, `DriverName`
         FROM `orders` o
         JOIN parties p ON o.order_name = p.id
         JOIN parties p2 ON o.customer_name = p2.id

@@ -1,71 +1,97 @@
 <?php
-include 'db_connect.php';
+include '../db_connect.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$data = json_decode(file_get_contents('php://input'), true);
-
-if ($data) {
-    $consignor = $conn->real_escape_string($data['consignor']);
-    $consignee = $conn->real_escape_string($data['consignee']);
-    $bookingDate = $conn->real_escape_string($data['bookingDate']);
-    $fromLocation = $conn->real_escape_string($data['fromLocation']);
-    $toLocation = $conn->real_escape_string($data['toLocation']);
+try {
     
-    $taxPaidBy = $conn->real_escape_string($data['taxPaidBy']);
-    $paidBy = $conn->real_escape_string($data['paidBy']);
-    $transportMode = $conn->real_escape_string($data['transportMode']);
-    
-    $pickupAddress = $conn->real_escape_string($data['pickupAddress']);
-    $deliveryAddress = $conn->real_escape_string($data['deliveryAddress']);
 
-    //vehicle details
-    $vehicletype = $conn->real_escape_string($data['vehicletype']);
-    $Vehiclecapacity = $conn->real_escape_string($data['Vehiclecapacity']);
-    
-    $Vehicleno = $conn->real_escape_string($data['Vehicleno']);
-    $DriverName = $conn->real_escape_string($data['DriverName']);
+    // Decode JSON input
+    $data = json_decode(file_get_contents('php://input'), true);
 
-    $sql = "INSERT INTO orders (Status, order_name, customer_name, order_date, fromLocation, toLocation, transportMode, paidBy, taxPaidBy, pickupAddress, deliveryAddress, vehicletype, Vehiclecapacity, Vehicleno, DriverName) 
-    VALUES ('Initiated', '$consignor', '$consignee', '$bookingDate', '$fromLocation', '$toLocation', '$transportMode', '$paidBy', '$taxPaidBy', '$pickupAddress', '$deliveryAddress', '$vehicletype', ' $Vehiclecapacity', ' $Vehicleno', '$DriverName')";
+    if ($data) {
+        $consignor = $data['consignor'];
+        $consignee = $data['consignee'];
+        $bookingDate = $data['bookingDate'];
+        $fromLocation = $data['fromLocation'];
+        $toLocation = $data['toLocation'];
+        $taxPaidBy = $data['taxPaidBy'];
+        $paidBy = $data['paidBy'];
+        $transportMode = $data['transportMode'];
+        $pickupAddress = $data['pickupAddress'];
+        $deliveryAddress = $data['deliveryAddress'];
+        $Vehicleno = $data['Vehicleno'];
+        $DriverName = $data['DriverName'];
 
-    if ($conn->query($sql)) {
-        $orderId = $conn->insert_id;
+        // Begin transaction
+        $conn->beginTransaction();
 
+        // Insert into `orders`
+        $orderSql = "INSERT INTO orders (Status, order_name, customer_name, order_date, fromLocation, toLocation, transportMode, paidBy, taxPaidBy, pickupAddress, deliveryAddress, Vehicleno, DriverName) 
+                     VALUES ('Initiated', :consignor, :consignee, :bookingDate, :fromLocation, :toLocation, :transportMode, :paidBy, :taxPaidBy, :pickupAddress, :deliveryAddress, :Vehicleno, :DriverName)";
+        $stmt = $conn->prepare($orderSql);
+        $stmt->execute([
+            ':consignor' => $consignor,
+            ':consignee' => $consignee,
+            ':bookingDate' => $bookingDate,
+            ':fromLocation' => $fromLocation,
+            ':toLocation' => $toLocation,
+            ':transportMode' => $transportMode,
+            ':paidBy' => $paidBy,
+            ':taxPaidBy' => $taxPaidBy,
+            ':pickupAddress' => $pickupAddress,
+            ':deliveryAddress' => $deliveryAddress,
+            ':Vehicleno' => $Vehicleno,
+            ':DriverName' => $DriverName
+        ]);
+        $orderId = $conn->lastInsertId();
+
+        // Insert items if provided
         if (!empty($data['items'])) {
+            $itemSql = "INSERT INTO items (order_id, item_name, parceltype, quantity, weight, itemtax, rate, amount) 
+                        VALUES (:order_id, :item_name, :parceltype, :quantity, :weight, :itemtax, :rate, :amount)";
+            $itemStmt = $conn->prepare($itemSql);
+
             foreach ($data['items'] as $item) {
-                $itemName = $conn->real_escape_string($item['itemName']);
-                $parceltype = $conn->real_escape_string($item['parceltype']);
-                $quantity = $conn->real_escape_string($item['quantity']);
-                $weight = $conn->real_escape_string($item['weight']);
-                $itemtax = $conn->real_escape_string($item['itemtax']);
-                $rate = $conn->real_escape_string($item['rate']);
-                $amount = $conn->real_escape_string($item['amount']);
-                $conn->query("INSERT INTO items (order_id, item_name, parceltype, quantity, weight, itemtax, rate, amount) 
-                              VALUES ('$orderId', '$itemName', '$parceltype', '$quantity', '$weight', '$itemtax', '$rate', '$amount')");
+                $itemStmt->execute([
+                    ':order_id' => $orderId,
+                    ':item_name' => $item['itemName'],
+                    ':parceltype' => $item['parceltype'],
+                    ':quantity' => $item['quantity'],
+                    ':weight' => $item['weight'],
+                    ':itemtax' => $item['itemtax'],
+                    ':rate' => $item['rate'],
+                    ':amount' => $item['amount']
+                ]);
             }
         }
 
+        // Insert charges if provided
         if (!empty($data['charges'])) {
+            $chargeSql = "INSERT INTO charges (order_id, charge_name, amount) 
+                          VALUES (:order_id, :charge_name, :amount)";
+            $chargeStmt = $conn->prepare($chargeSql);
+
             foreach ($data['charges'] as $charge) {
-                $chargeName = $conn->real_escape_string($charge['chargeName']);
-                $chargeAmount = $conn->real_escape_string($charge['chargeAmount']);
-                $conn->query("INSERT INTO charges (order_id, charge_name, amount) 
-                              VALUES ('$orderId', '$chargeName', '$chargeAmount')");
+                $chargeStmt->execute([
+                    ':order_id' => $orderId,
+                    ':charge_name' => $charge['chargeName'],
+                    ':amount' => $charge['chargeAmount']
+                ]);
             }
         }
 
-        echo json_encode(["success" => true, "message" => "$orderId"]);
-    } else {
-        echo json_encode(["success" => false, "message" => "Failed to create order."]);
-    }
-} else {
-    echo json_encode(["success" => false, "message" => "Invalid data."]);
-}
+        // Commit the transaction
+        $conn->commit();
 
-$conn->close();
+        // Success response
+        echo json_encode(["success" => true, "message" => $orderId]);
+    } else {
+        echo json_encode(["success" => false, "message" => "Invalid data."]);
+    }
+} catch (Exception $e) {
+    // Rollback transaction in case of error
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    echo json_encode(["success" => false, "message" => "Error: " . $e->getMessage()]);
+}
 ?>
