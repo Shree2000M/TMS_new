@@ -11,6 +11,11 @@ $query = "SELECT id, name FROM parties ORDER BY name ASC";
 $stmt = $conn->prepare($query);
 $stmt->execute();
 $parties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$query = "SELECT Location, Location FROM ratemaster";
+$stmt = $conn->prepare($query);
+$stmt->execute();
+$locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -714,7 +719,16 @@ $parties = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                   </div>
                                   <div class="col-md-6 mb-3">
                                       <label for="toLocation" class="form-label">To Location</label>
-                                      <input type="text" class="form-control" name="toLocation" id="toLocation" placeholder="Destination" required>
+                                      
+                                      <select class="form-select form-control" name="toLocation" id="toLocation" required>
+                    <option value="" disabled selected>Select to Location</option>
+                    <?php foreach ($locations as $location): ?>
+                        <option value="<?php echo htmlspecialchars($location['Location']); ?>">
+                            <?php echo htmlspecialchars($location['Location']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
                                   </div>
                               </div>
                               <div class="row">

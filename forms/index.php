@@ -6,6 +6,7 @@ try {
 
     // Decode JSON input
     $data = json_decode(file_get_contents('php://input'), true);
+    $tweight;
 
     if ($data) {
         $consignor = $data['consignor'];
@@ -20,6 +21,10 @@ try {
         $deliveryAddress = $data['deliveryAddress'];
         $Vehicleno = $data['Vehicleno'];
         $DriverName = $data['DriverName'];
+
+       
+
+    
 
         // Begin transaction
         $conn->beginTransaction();
@@ -44,6 +49,9 @@ try {
         ]);
         $orderId = $conn->lastInsertId();
 
+       
+        
+
         // Insert items if provided
         if (!empty($data['items'])) {
             $itemSql = "INSERT INTO items (order_id, item_name, parceltype, quantity, weight, itemtax, rate, amount) 
@@ -61,8 +69,31 @@ try {
                     ':rate' => $item['rate'],
                     ':amount' => $item['amount']
                 ]);
+                $tweight=$item['weight'];
             }
         }
+
+// insert rate as per area as per weight
+        $sql = "INSERT INTO bill (orderid, rate, rate2, rate3, rate4)
+        SELECT 
+            :order_id,
+            CASE
+                WHEN 1500.00 <= :weight AND :weight <= 3000.00 THEN Rate_1_5
+                WHEN 3000.00 <= :weight AND :weight <= 6000.00 THEN Rate_3
+                WHEN 6000.00 <= :weight AND :weight <= 9000.00 THEN Rate_6
+                WHEN 9000.00 <= :weight THEN Rate_9
+                ELSE Rate_9
+            END AS AppliedRate,
+            null, null, null
+        FROM ratemaster
+        WHERE Location = :toLocation";
+
+$stmt = $conn->prepare($sql);
+$stmt->execute([
+    ':order_id' => $orderId,
+    ':toLocation' => $toLocation,
+    ':weight' => $tweight
+]);
 
         // Insert charges if provided
         if (!empty($data['charges'])) {
